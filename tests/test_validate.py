@@ -59,7 +59,7 @@ def test_tab_cr_and_lf_are_not_control_characters() -> None:
 def test_control_characters_are_refused_by_code_point(code: int) -> None:
     message = message_of(f">s1\nMAK{chr(code)}QL\n")
     assert "control character" in message
-    assert "0x%02X" % code in message
+    assert f"0x{code:02X}" in message
     assert chr(code) not in message
 
 

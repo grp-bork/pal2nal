@@ -142,7 +142,7 @@ def write_alignment(
     show_mask = not blockonly and "#" in blockseq
 
     if outform == "paml":
-        out.write(" %3d %6d\n" % (len(aln.ids), len(aln.codonaln[0])))
+        out.write(f" {len(aln.ids):3d} {len(aln.codonaln[0]):6d}\n")
         for k, sid in enumerate(aln.ids):
             out.write(sid + "\n")
             for text, colour in zip(
@@ -170,7 +170,7 @@ def write_alignment(
     masks = chunk(aln.maskseq, _BLOCK_WIDTH)
     for b in range(len(blocks)):
         for k, sid in enumerate(aln.ids):
-            out.write("%-*s    " % (idw, sid))
+            out.write(f"{sid:<{idw}}    ")
             _emit(
                 out,
                 chunk(aln.codonaln[k], _BLOCK_WIDTH)[b],
@@ -178,7 +178,8 @@ def write_alignment(
                 html,
             )
         if show_mask:
-            out.write("%-*s    %s\n" % (idw, " ", masks[b] if b < len(masks) else ""))
+            mask = masks[b] if b < len(masks) else ""
+            out.write(f"{' ':<{idw}}    {mask}\n")
         out.write("\n")
 
 
@@ -218,16 +219,16 @@ def _write_codon(
         for k, sid in enumerate(aln.ids):
             pep_chunks = chunk(peps[k], _CODON_PEP_WIDTH)
             pep = pep_chunks[b] if b < len(pep_chunks) else ""
-            out.write("%-*s    " % (idw, ""))
+            out.write(f"{'':<{idw}}    ")
             out.write("   ".join(pep) + "\n")
 
             codon_chunk = chunk(aln.codonaln[k], _BLOCK_WIDTH)[b]
             colour_chunk = chunk(aln.coloraln[k], _BLOCK_WIDTH)[b]
-            out.write("%-*s    " % (idw, sid))
+            out.write(f"{sid:<{idw}}    ")
             spaced = " ".join(chunk(codon_chunk, 3))
             spaced_colour = " ".join(chunk(colour_chunk, 3))
             _emit(out, spaced, spaced_colour, html)
         if show_mask:
             mask = masks[b] if b < len(masks) else ""
-            out.write("%-*s    %s\n" % (idw, " ", " ".join(chunk(mask, 3))))
+            out.write(f"{' ':<{idw}}    {' '.join(chunk(mask, 3))}\n")
         out.write("\n")

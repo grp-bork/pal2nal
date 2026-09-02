@@ -9,7 +9,6 @@ difference in wording, spacing or stream is a regression.
 from __future__ import annotations
 
 import io
-import os
 import shlex
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path

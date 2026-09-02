@@ -17,7 +17,7 @@ from pathlib import Path
 TESTS = Path(__file__).parent
 sys.path.insert(0, str(TESTS.parent))
 
-from pal2nal.cli import main  # noqa: E402
+from pal2nal.cli import main
 
 
 def main_() -> None:

@@ -1,6 +1,6 @@
 # Changelog
 
-## v15.0.0 (unreleased)
+## v15.0 (2 September 2026)
 
 First release since v14 (2 December 2011), and the first in Python. The
 conversion algorithm is unchanged: v15 reproduces v14's output byte for
@@ -136,58 +136,6 @@ has no such fallback and is fatal.
   `-codontable` was ignored and the default used, and `-output -html`
   consumed `-html` as the format name.
 
-### Changed: web interface
-
-* Rewritten as a Flask application; the Perl CGI scripts are retired.
-* **Form values are validated against fixed sets and never reach a shell.**
-  The old result page interpolated the codon table and output format
-  straight into `system()`, so a crafted request could run arbitrary
-  commands on the server. Nothing is shelled out now: the converter is
-  called in process.
-* **Output is HTML-escaped.** Sequence IDs were previously written into the
-  page raw.
-* Request size is capped rather than unbounded, and scratch files use the
-  system temporary directory instead of predictable PID-suffixed names in a
-  shared web directory.
-* **Submitted text is validated before the scratch files are written**, so
-  a rejection names the form field rather than a path under the server's
-  temporary directory.
-* **A conversion is abandoned after 45 seconds.** `pn2codon` searches a
-  pattern built from every residue against the whole DNA, unanchored, so
-  its cost is quadratic in sequence length when the peptides and the DNA do
-  not correspond. A 1 MB upload of such input took 161 seconds and a 4 MB
-  one tens of minutes, enough for two requests to hold every worker
-  indefinitely; the byte limit could not bound this, because a correct
-  alignment and a contrived one of the same size differ in cost by an order
-  of magnitude. The budget clears the slowest legitimate maximum-size
-  alignment measured (22 s) and is set by `PAL2NAL_CONVERSION_TIMEOUT`. The
-  command-line tool is unaffected.
-* **The Docker image no longer installs perl**, which takes 67 MB off it.
-  Serving the site never used it, and neither does the suite: the test that
-  reads v14's `%p2c` hashes parses `pal2nal.v14.pl` as text rather than
-  running it. The stripped-down `perl-base` the Debian base ships is still
-  there, so `generate_golden.sh` still runs.
-* **The image is built on Python 3.14 and Debian 13 (trixie)**, replacing
-  3.13 on bookworm, which is now oldstable.
-* **`docker compose up` no longer serves the Werkzeug debugger.** The
-  compose file targeted a `flask_debug` stage running `flask run --debug`,
-  which exposes the interactive debugger and full tracebacks, and the
-  README documented that command as the way to run the site. The stage is
-  gone, gunicorn is the default target, and the application container is no
-  longer published to the host on an ephemeral port that bypassed nginx.
-* **A pasted alignment and an uploaded one share the 4 MB limit.** Werkzeug
-  3.1 caps non-file form fields at 500 kB separately, so text pasted into
-  the form was refused at an eighth of the documented limit, with an
-  unstyled error page. Oversize submissions now get the site's own page.
-* **Security headers are sent on every response**, including a
-  content-security policy that permits no inline script and no third-party
-  origin.
-* **The result page offers copy and save buttons.** Two icon buttons in the
-  upper right of the output take the alignment off the page as plain text --
-  the `<FONT>` markers around mismatched bases and the HTML escaping are
-  undone -- so it no longer has to be selected by hand. The saved file is
-  named after the output format (`pal2nal.aln`, `.phy`, `.fasta`, `.txt`).
-
 ### Removed
 
 * **dS/dN calculation.** It depended on a 32-bit Linux `codeml` binary from
@@ -200,7 +148,6 @@ has no such fallback and is fatal.
 * **The mail-a-copy route** (`sendcopy.cgi`, `sendcopy.pl`), which shelled
   out to `mutt` and was pinned to the v8 tarball.
 * **`clean_tmp.pl`**, the cron job that swept the CGI's scratch files.
-* **The Matomo tracker** that reported to `tr-denbi.embl.de`.
 
 ### Notes
 

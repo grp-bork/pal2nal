@@ -1,6 +1,6 @@
 [project]
 name = "pal2nal"
-version = "15.0.0.dev0"
+version = "15.0"
 description = "Convert a protein sequence alignment and the corresponding DNA sequences into a codon alignment"
 readme = "README.md"
 requires-python = ">=3.11"

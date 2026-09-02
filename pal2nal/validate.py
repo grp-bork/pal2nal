@@ -81,10 +81,10 @@ def check_text(text: str, source: str) -> None:
         count = len(_NON_ASCII.findall(text))
         line, column = _position(text, match.start())
         raise InputError(
-            "\nERROR: %s contains %d non-ASCII character%s "
-            "(first at line %d, column %d)\n"
+            f"\nERROR: {source} contains {count} non-ASCII character"
+            f"{'' if count == 1 else 's'} "
+            f"(first at line {line}, column {column})\n"
             "       expected plain ASCII; the offending text is not echoed\n\n"
-            % (source, count, "" if count == 1 else "s", line, column)
         )
 
     match = _CONTROL.search(text)
@@ -92,17 +92,10 @@ def check_text(text: str, source: str) -> None:
         count = len(_CONTROL.findall(text))
         line, column = _position(text, match.start())
         raise InputError(
-            "\nERROR: %s contains %d control character%s "
-            "(first 0x%02X at line %d, column %d)\n"
+            f"\nERROR: {source} contains {count} control character"
+            f"{'' if count == 1 else 's'} "
+            f"(first 0x{ord(match.group(0)):02X} at line {line}, column {column})\n"
             "       only tab, carriage return and newline are allowed\n\n"
-            % (
-                source,
-                count,
-                "" if count == 1 else "s",
-                ord(match.group(0)),
-                line,
-                column,
-            )
         )
 
 
@@ -132,13 +125,13 @@ def check_nucleotide_alphabet(id2seq: Mapping[str, str]) -> None:
     ]
     for seq_id, offenders in bad[:_MAX_REPORTED]:
         detail = ", ".join(
-            "'%s' (x%d, first at nucleotide %d)" % (ch, n, first) for ch, n, first in offenders
+            f"'{ch}' (x{n}, first at nucleotide {first})" for ch, n, first in offenders
         )
-        lines.append("       %s: %s\n" % (seq_id, detail))
+        lines.append(f"       {seq_id}: {detail}\n")
     if len(bad) > _MAX_REPORTED:
-        lines.append("       ... and %d more sequence(s)\n" % (len(bad) - _MAX_REPORTED))
+        lines.append(f"       ... and {len(bad) - _MAX_REPORTED} more sequence(s)\n")
     lines.append(
-        "       expected %s or an IUPAC ambiguity code (%s)\n\n"
-        % (", ".join(NUCLEOTIDES), " ".join(AMBIGUITY))
+        f"       expected {', '.join(NUCLEOTIDES)} or an IUPAC ambiguity code "
+        f"({' '.join(AMBIGUITY)})\n\n"
     )
     raise InputError("".join(lines))

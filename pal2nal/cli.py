@@ -11,7 +11,7 @@ import sys
 from typing import TextIO
 
 from . import inputs, output
-from .convert import NO_MATCH, OK, pn2codon
+from .convert import NO_MATCH, pn2codon
 from .options import Exit, Options, check_combinations, parse_args
 from .validate import InputError
 
@@ -68,8 +68,8 @@ def run(opt: Options, out: TextIO, err: TextIO) -> int:
         msg = f"\nERROR: number of input seqs differ (aa: {naa};  nuc: {nnuc})!!\n\n"
         if not opt.html:
             # v14 lists the ids only on stderr
-            msg += "   aa  '%s'\n" % " ".join(aln.ids)
-            msg += "   nuc '%s'\n" % " ".join(nuc.ids)
+            msg += "   aa  '{}'\n".format(" ".join(aln.ids))
+            msg += "   nuc '{}'\n".format(" ".join(nuc.ids))
         _fail(opt, out, err, msg)
 
     aaseqs = [inputs.apply_frameshift_markers(s) for s in aln.sequences]
@@ -124,9 +124,9 @@ def run(opt: Options, out: TextIO, err: TextIO) -> int:
         sink = out if opt.html else err
         sink.write(RULE + "\n")
         if not opt.html:
-            sink.write("#  Input files:  %s %s\n" % (opt.alnfile, " ".join(opt.nucfiles)))
+            sink.write("#  Input files:  {} {}\n".format(opt.alnfile, " ".join(opt.nucfiles)))
         for message in reported:
-            sink.write("#  %s\n" % _esc(message, opt.html))
+            sink.write(f"#  {_esc(message, opt.html)}\n")
         sink.write(RULE + "\n\n")
 
     built = output.build(
@@ -156,9 +156,9 @@ def _inconsistency(opt: Options, aa_id: str, nuc_id: str, pep: str, dna: str) ->
     printable ASCII, and it is escaped under -html.
     """
     parts = ["#---  ERROR: inconsistency between the following pep and nuc seqs  ---#\n"]
-    parts.append(">%s\n" % _esc(aa_id, opt.html))
+    parts.append(f">{_esc(aa_id, opt.html)}\n")
     parts += [_esc(line, opt.html) + "\n" for line in output.chunk(pep.replace("-", ""), 60)]
-    parts.append(">%s\n" % _esc(nuc_id, opt.html))
+    parts.append(f">{_esc(nuc_id, opt.html)}\n")
     parts += [_esc(line, opt.html) + "\n" for line in output.chunk(dna, 60)]
     parts.append(RULE + "\n\n")
     return "".join(parts)
