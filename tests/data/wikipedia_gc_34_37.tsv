@@ -1,0 +1,12 @@
+# Genetic codes 34-37: the four alternative bacterial codes of
+# Shulgina & Eddy (2021), eLife 10:e71402, as tabulated by Wikipedia
+# ("List of genetic codes"). NCBI has not adopted them and assigns no
+# id past 33; 34-37 are Wikipedia's own numbering.
+#
+# One line per code: id<TAB>amino acid of each codon, in the codon order
+# TTT TTC TTA TTG TCT ... GGG (the same order as NCBI's ncbieaa string).
+#
+34	FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRMVVVVAAAADDEEGGGG
+35	FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRQIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG
+36	FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRWIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG
+37	FFLLSSSSYY**CCGWLLLLPPPPHHQQRRWWIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG

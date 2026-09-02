@@ -1,0 +1,9 @@
+#---  ERROR: inconsistency between the following pep and nuc seqs  ---#
+>m2
+MAKQLRT
+>m2
+ATGGCTAAAGGGCTGCGTACT
+
+
+Run bl2seq (-p tblastn) or GeneWise to see the inconsistency.
+

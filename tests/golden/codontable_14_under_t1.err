@@ -1,0 +1,14 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t14_pep.fasta data/allcodons.nuc
+#  WARNING: probeA pepAlnPos 11: Y does not correspond to TAA
+#  WARNING: probeA pepAlnPos 15: W does not correspond to TGA
+#  WARNING: probeA pepAlnPos 43: N does not correspond to AAA
+#  WARNING: probeA pepAlnPos 47: S does not correspond to AGA
+#  WARNING: probeA pepAlnPos 48: S does not correspond to AGG
+#  WARNING: probeB pepAlnPos 11: Y does not correspond to TAA
+#  WARNING: probeB pepAlnPos 15: W does not correspond to TGA
+#  WARNING: probeB pepAlnPos 43: N does not correspond to AAA
+#  WARNING: probeB pepAlnPos 47: S does not correspond to AGA
+#  WARNING: probeB pepAlnPos 48: S does not correspond to AGG
+#------------------------------------------------------------------------#
+

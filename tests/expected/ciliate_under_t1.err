@@ -1,0 +1,6 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/ciliate_pep.fasta data/ciliate.nuc
+#  WARNING: cilA pepAlnPos 2: Q does not correspond to TAA
+#  WARNING: cilA pepAlnPos 3: Q does not correspond to TAG
+#------------------------------------------------------------------------#
+

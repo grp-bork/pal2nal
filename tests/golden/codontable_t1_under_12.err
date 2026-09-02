@@ -1,0 +1,7 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t1_pep.fasta data/allcodons.nuc
+#  Codontable 12 is used
+#  WARNING: probeA pepAlnPos 20: L does not correspond to CTG
+#  WARNING: probeB pepAlnPos 20: L does not correspond to CTG
+#------------------------------------------------------------------------#
+

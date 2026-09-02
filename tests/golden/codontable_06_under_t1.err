@@ -1,0 +1,8 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t6_pep.fasta data/allcodons.nuc
+#  WARNING: probeA pepAlnPos 11: Q does not correspond to TAA
+#  WARNING: probeA pepAlnPos 12: Q does not correspond to TAG
+#  WARNING: probeB pepAlnPos 11: Q does not correspond to TAA
+#  WARNING: probeB pepAlnPos 12: Q does not correspond to TAG
+#------------------------------------------------------------------------#
+

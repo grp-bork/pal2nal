@@ -1,0 +1,5 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/dhfr_pep.fasta data/dhfr.nuc
+#  WARNING: pseudogene pepAlnPos 11: V does not correspond to GAT
+#------------------------------------------------------------------------#
+

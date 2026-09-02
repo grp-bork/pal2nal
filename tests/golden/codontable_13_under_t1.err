@@ -1,0 +1,12 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t13_pep.fasta data/allcodons.nuc
+#  WARNING: probeA pepAlnPos 15: W does not correspond to TGA
+#  WARNING: probeA pepAlnPos 35: M does not correspond to ATA
+#  WARNING: probeA pepAlnPos 47: G does not correspond to AGA
+#  WARNING: probeA pepAlnPos 48: G does not correspond to AGG
+#  WARNING: probeB pepAlnPos 15: W does not correspond to TGA
+#  WARNING: probeB pepAlnPos 35: M does not correspond to ATA
+#  WARNING: probeB pepAlnPos 47: G does not correspond to AGA
+#  WARNING: probeB pepAlnPos 48: G does not correspond to AGG
+#------------------------------------------------------------------------#
+

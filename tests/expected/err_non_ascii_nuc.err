@@ -1,0 +1,4 @@
+
+ERROR: data/nonascii.nuc contains 1 non-ASCII character (first at line 1, column 1)
+       expected plain ASCII; the offending text is not echoed
+

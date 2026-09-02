@@ -1,0 +1,5 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/short_pep.fasta data/short.nuc
+#  WARNING: s1 pepAlnPos 2: A does not correspond to GGG
+#------------------------------------------------------------------------#
+

@@ -1,0 +1,4 @@
+
+ERROR: data/nonascii_pep.fasta contains 1 non-ASCII character (first at line 2, column 6)
+       expected plain ASCII; the offending text is not echoed
+

@@ -1,0 +1,5 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/unknown_residue_pep.fasta data/simple.nuc
+#  WARNING: s1 pepAlnPos 4: Z unknown AA type. Taken as 'X'
+#------------------------------------------------------------------------#
+

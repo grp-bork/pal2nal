@@ -1,0 +1,43 @@
+[project]
+name = "pal2nal"
+version = "15.0.0.dev0"
+description = "Convert a protein sequence alignment and the corresponding DNA sequences into a codon alignment"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [
+    { name = "Mikita Suyama" },
+]
+keywords = ["bioinformatics", "alignment", "codon", "genetics", "phylogenetics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "mypy", "ruff"]
+
+[project.urls]
+Repository = "https://github.com/grp-bork/pal2nal"
+Issues = "https://github.com/grp-bork/pal2nal/issues"
+
+[project.scripts]
+pal2nal = "pal2nal.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["pal2nal*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100

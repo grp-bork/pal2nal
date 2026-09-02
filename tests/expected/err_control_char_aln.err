@@ -1,0 +1,4 @@
+
+ERROR: data/control_pep.fasta contains 1 control character (first 0x00 at line 4, column 4)
+       only tab, carriage return and newline are allowed
+

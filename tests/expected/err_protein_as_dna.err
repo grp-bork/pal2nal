@@ -1,0 +1,6 @@
+
+ERROR: unexpected characters in the DNA sequence(s):
+       s1: 'Q' (x1, first at nucleotide 4), 'L' (x1, first at nucleotide 5)
+       s2: 'L' (x1, first at nucleotide 4), 'F' (x1, first at nucleotide 5)
+       expected A, C, G, T, U or an IUPAC ambiguity code (R Y S W K M B D H V N)
+

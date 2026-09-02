@@ -1,0 +1,5 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/mismatch_pep.fasta data/mismatch.nuc
+#  WARNING: m2 pepAlnPos 4: Q does not correspond to GGG
+#------------------------------------------------------------------------#
+

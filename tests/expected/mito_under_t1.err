@@ -1,0 +1,6 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/mito_pep.fasta data/mito.nuc
+#  WARNING: mtA pepAlnPos 2: W does not correspond to TGA
+#  WARNING: mtA pepAlnPos 6: W does not correspond to TGA
+#------------------------------------------------------------------------#
+

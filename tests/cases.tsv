@@ -1,0 +1,127 @@
+dhfr_output_clustal	data/dhfr.aln data/dhfr.nuc -output clustal
+dhfr_output_paml	data/dhfr.aln data/dhfr.nuc -output paml
+dhfr_output_fasta	data/dhfr.aln data/dhfr.nuc -output fasta
+dhfr_output_codon	data/dhfr.aln data/dhfr.nuc -output codon
+dhfr_default_format	data/dhfr.aln data/dhfr.nuc
+dhfr_nogap	data/dhfr.aln data/dhfr.nuc -nogap
+dhfr_nomismatch	data/dhfr.aln data/dhfr.nuc -nomismatch
+dhfr_blockonly	data/dhfr.aln data/dhfr.nuc -blockonly
+dhfr_nogap_nomismatch	data/dhfr.aln data/dhfr.nuc -nogap -nomismatch
+dhfr_nogap_blockonly	data/dhfr.aln data/dhfr.nuc -nogap -blockonly
+dhfr_all_filters	data/dhfr.aln data/dhfr.nuc -nogap -nomismatch -blockonly
+dhfr_nogap_paml	data/dhfr.aln data/dhfr.nuc -nogap -output paml
+dhfr_nogap_fasta	data/dhfr.aln data/dhfr.nuc -nogap -output fasta
+dhfr_html	data/dhfr.aln data/dhfr.nuc -html
+dhfr_nostderr	data/dhfr.aln data/dhfr.nuc -nostderr
+dhfr_html_nostderr	data/dhfr.aln data/dhfr.nuc -html -nostderr
+dhfr_html_nogap_paml	data/dhfr.aln data/dhfr.nuc -html -nogap -output paml
+pep_fasta_input	data/dhfr_pep.fasta data/dhfr.nuc
+aln_crlf_windows	data/dhfr_crlf.aln data/dhfr.nuc
+aln_cr_classicmac	data/dhfr_cr.aln data/dhfr.nuc
+nuc_split_files	data/dhfr.aln data/dhfr_split1.nuc data/dhfr_split2.nuc
+nuc_lowercase	data/dhfr.aln data/dhfr_lowercase.nuc
+nuc_matched_ids	data/dhfr.aln data/dhfr_matched_ids.nuc
+nuc_matched_ids_reversed	data/dhfr.aln data/dhfr_matched_ids_reversed.nuc
+codontable_01_own_probe	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 1
+codontable_02_own_probe	data/allcodons_t2_pep.fasta data/allcodons.nuc -codontable 2
+codontable_03_own_probe	data/allcodons_t3_pep.fasta data/allcodons.nuc -codontable 3
+codontable_04_own_probe	data/allcodons_t4_pep.fasta data/allcodons.nuc -codontable 4
+codontable_05_own_probe	data/allcodons_t5_pep.fasta data/allcodons.nuc -codontable 5
+codontable_06_own_probe	data/allcodons_t6_pep.fasta data/allcodons.nuc -codontable 6
+codontable_09_own_probe	data/allcodons_t9_pep.fasta data/allcodons.nuc -codontable 9
+codontable_10_own_probe	data/allcodons_t10_pep.fasta data/allcodons.nuc -codontable 10
+codontable_11_own_probe	data/allcodons_t11_pep.fasta data/allcodons.nuc -codontable 11
+codontable_12_own_probe	data/allcodons_t12_pep.fasta data/allcodons.nuc -codontable 12
+codontable_13_own_probe	data/allcodons_t13_pep.fasta data/allcodons.nuc -codontable 13
+codontable_14_own_probe	data/allcodons_t14_pep.fasta data/allcodons.nuc -codontable 14
+codontable_15_own_probe	data/allcodons_t15_pep.fasta data/allcodons.nuc -codontable 15
+codontable_16_own_probe	data/allcodons_t16_pep.fasta data/allcodons.nuc -codontable 16
+codontable_21_own_probe	data/allcodons_t21_pep.fasta data/allcodons.nuc -codontable 21
+codontable_22_own_probe	data/allcodons_t22_pep.fasta data/allcodons.nuc -codontable 22
+codontable_23_own_probe	data/allcodons_t23_pep.fasta data/allcodons.nuc -codontable 23
+codontable_02_under_t1	data/allcodons_t2_pep.fasta data/allcodons.nuc
+codontable_t1_under_02	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 2
+codontable_03_under_t1	data/allcodons_t3_pep.fasta data/allcodons.nuc
+codontable_t1_under_03	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 3
+codontable_04_under_t1	data/allcodons_t4_pep.fasta data/allcodons.nuc
+codontable_t1_under_04	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 4
+codontable_05_under_t1	data/allcodons_t5_pep.fasta data/allcodons.nuc
+codontable_t1_under_05	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 5
+codontable_06_under_t1	data/allcodons_t6_pep.fasta data/allcodons.nuc
+codontable_t1_under_06	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 6
+codontable_09_under_t1	data/allcodons_t9_pep.fasta data/allcodons.nuc
+codontable_t1_under_09	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 9
+codontable_10_under_t1	data/allcodons_t10_pep.fasta data/allcodons.nuc
+codontable_t1_under_10	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 10
+codontable_12_under_t1	data/allcodons_t12_pep.fasta data/allcodons.nuc
+codontable_t1_under_12	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 12
+codontable_13_under_t1	data/allcodons_t13_pep.fasta data/allcodons.nuc
+codontable_t1_under_13	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 13
+codontable_14_under_t1	data/allcodons_t14_pep.fasta data/allcodons.nuc
+codontable_t1_under_14	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 14
+codontable_15_under_t1	data/allcodons_t15_pep.fasta data/allcodons.nuc
+codontable_t1_under_15	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 15
+codontable_16_under_t1	data/allcodons_t16_pep.fasta data/allcodons.nuc
+codontable_t1_under_16	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 16
+codontable_21_under_t1	data/allcodons_t21_pep.fasta data/allcodons.nuc
+codontable_t1_under_21	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 21
+codontable_22_under_t1	data/allcodons_t22_pep.fasta data/allcodons.nuc
+codontable_t1_under_22	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 22
+codontable_23_under_t1	data/allcodons_t23_pep.fasta data/allcodons.nuc
+codontable_t1_under_23	data/allcodons_t1_pep.fasta data/allcodons.nuc -codontable 23
+example_from_header	data/example_pep.fasta data/example.nuc
+example_codon_output	data/example_pep.fasta data/example.nuc -output codon
+frameshifts	data/frameshift_pep.fasta data/frameshift.nuc
+frameshifts_codon	data/frameshift_pep.fasta data/frameshift.nuc -output codon
+simple_clean	data/simple_pep.fasta data/simple.nuc
+simple_nogap	data/simple_pep.fasta data/simple.nuc -nogap
+mismatch_warned	data/mismatch_pep.fasta data/mismatch.nuc
+mismatch_removed	data/mismatch_pep.fasta data/mismatch.nuc -nomismatch
+utr_and_polya	data/utr_pep.fasta data/utr.nuc
+mito_under_t1	data/mito_pep.fasta data/mito.nuc
+mito_under_t2	data/mito_pep.fasta data/mito.nuc -codontable 2
+ciliate_under_t1	data/ciliate_pep.fasta data/ciliate.nuc
+ciliate_under_t6	data/ciliate_pep.fasta data/ciliate.nuc -codontable 6
+usage_no_args	
+usage_one_arg	data/dhfr.aln
+help_flag	-h
+err_bad_output_format	data/dhfr.aln data/dhfr.nuc -output nexus
+err_bad_codontable	data/dhfr.aln data/dhfr.nuc -codontable 7
+err_codon_with_nogap	data/dhfr.aln data/dhfr.nuc -output codon -nogap
+err_codon_with_blockonly	data/dhfr.aln data/dhfr.nuc -output codon -blockonly
+err_codon_with_nomismatch	data/dhfr.aln data/dhfr.nuc -output codon -nomismatch
+err_missing_file	data/nonexistent.aln data/dhfr.nuc
+fix_leading_blank_fasta	data/lead_blank_pep.fasta data/dhfr.nuc
+fix_duplicate_fasta_ids	data/dup_ids_pep.fasta data/dhfr.nuc
+fix_dot_gap	data/dotgap_pep.fasta data/dotgap.nuc
+fix_selenocysteine	data/seleno_pep.fasta data/seleno.nuc
+fix_short_peptide_fallback	data/short_pep.fasta data/short.nuc
+fix_codon_row_drift	data/drift_pep.fasta data/drift.nuc -output codon
+fix_help_stops	-h data/dhfr.aln data/dhfr.nuc
+fix_dangling_output	data/dhfr.aln data/dhfr.nuc -output
+fix_dangling_codontable	data/dhfr.aln data/dhfr.nuc -codontable
+fix_output_eats_flag	data/dhfr.aln data/dhfr.nuc -output -html
+fix_html_escapes_ids	data/angle_pep.fasta data/angle.nuc -html
+codontable_24_own_probe	data/allcodons_t24_pep.fasta data/allcodons.nuc -codontable 24
+codontable_25_own_probe	data/allcodons_t25_pep.fasta data/allcodons.nuc -codontable 25
+codontable_26_own_probe	data/allcodons_t26_pep.fasta data/allcodons.nuc -codontable 26
+codontable_27_own_probe	data/allcodons_t27_pep.fasta data/allcodons.nuc -codontable 27
+codontable_28_own_probe	data/allcodons_t28_pep.fasta data/allcodons.nuc -codontable 28
+codontable_29_own_probe	data/allcodons_t29_pep.fasta data/allcodons.nuc -codontable 29
+codontable_30_own_probe	data/allcodons_t30_pep.fasta data/allcodons.nuc -codontable 30
+codontable_31_own_probe	data/allcodons_t31_pep.fasta data/allcodons.nuc -codontable 31
+codontable_32_own_probe	data/allcodons_t32_pep.fasta data/allcodons.nuc -codontable 32
+codontable_33_own_probe	data/allcodons_t33_pep.fasta data/allcodons.nuc -codontable 33
+codontable_34_own_probe	data/allcodons_t34_pep.fasta data/allcodons.nuc -codontable 34
+codontable_35_own_probe	data/allcodons_t35_pep.fasta data/allcodons.nuc -codontable 35
+codontable_36_own_probe	data/allcodons_t36_pep.fasta data/allcodons.nuc -codontable 36
+codontable_37_own_probe	data/allcodons_t37_pep.fasta data/allcodons.nuc -codontable 37
+err_non_ascii_aln	data/nonascii_pep.fasta data/simple.nuc
+err_non_ascii_aln_html	data/nonascii_pep.fasta data/simple.nuc -html
+err_non_ascii_nuc	data/simple_pep.fasta data/nonascii.nuc
+err_invalid_utf8_aln	data/latin1_pep.fasta data/simple.nuc
+err_control_char_aln	data/control_pep.fasta data/simple.nuc
+err_protein_as_dna	data/simple_pep.fasta data/protein_as_dna.nuc
+pep_unknown_residue	data/unknown_residue_pep.fasta data/simple.nuc
+pep_unknown_residue_nomismatch	data/unknown_residue_pep.fasta data/simple.nuc -nomismatch
+pep_unknown_residue_blockonly	data/blockonly_unknown.aln data/simple.nuc -blockonly

@@ -1,0 +1,16 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t3_pep.fasta data/allcodons.nuc
+#  WARNING: probeA pepAlnPos 15: W does not correspond to TGA
+#  WARNING: probeA pepAlnPos 17: T does not correspond to CTT
+#  WARNING: probeA pepAlnPos 18: T does not correspond to CTC
+#  WARNING: probeA pepAlnPos 19: T does not correspond to CTA
+#  WARNING: probeA pepAlnPos 20: T does not correspond to CTG
+#  WARNING: probeA pepAlnPos 35: M does not correspond to ATA
+#  WARNING: probeB pepAlnPos 15: W does not correspond to TGA
+#  WARNING: probeB pepAlnPos 17: T does not correspond to CTT
+#  WARNING: probeB pepAlnPos 18: T does not correspond to CTC
+#  WARNING: probeB pepAlnPos 19: T does not correspond to CTA
+#  WARNING: probeB pepAlnPos 20: T does not correspond to CTG
+#  WARNING: probeB pepAlnPos 35: M does not correspond to ATA
+#------------------------------------------------------------------------#
+

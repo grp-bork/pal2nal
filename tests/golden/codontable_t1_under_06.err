@@ -1,0 +1,9 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t1_pep.fasta data/allcodons.nuc
+#  Codontable 6 is used
+#  WARNING: probeA pepAlnPos 11: * does not correspond to TAA
+#  WARNING: probeA pepAlnPos 12: * does not correspond to TAG
+#  WARNING: probeB pepAlnPos 11: * does not correspond to TAA
+#  WARNING: probeB pepAlnPos 12: * does not correspond to TAG
+#------------------------------------------------------------------------#
+

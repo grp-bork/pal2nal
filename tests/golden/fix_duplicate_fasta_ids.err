@@ -1,0 +1,23 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/dup_ids_pep.fasta data/dhfr.nuc
+#  WARNING: a pepAlnPos 1: M does not correspond to TGT
+#  WARNING: a pepAlnPos 2: A does not correspond to AAC
+#  WARNING: a pepAlnPos 3: K does not correspond to GAG
+#  WARNING: a pepAlnPos 4: Q does not correspond to CGG
+#  WARNING: a pepAlnPos 5: L does not correspond to GCT
+#  WARNING: a pepAlnPos 6: M does not correspond to CGG
+#  WARNING: a pepAlnPos 7: A does not correspond to AGG
+#  WARNING: a pepAlnPos 8: K does not correspond to TCC
+#  WARNING: a pepAlnPos 9: Q does not correspond to TCC
+#  WARNING: a pepAlnPos 10: L does not correspond to CGC
+#  WARNING: a pepAlnPos 1: M does not correspond to CTA
+#  WARNING: a pepAlnPos 2: A does not correspond to AAC
+#  WARNING: a pepAlnPos 3: K does not correspond to TGC
+#  WARNING: a pepAlnPos 4: Q does not correspond to ATT
+#  WARNING: a pepAlnPos 5: L does not correspond to GTC
+#  WARNING: a pepAlnPos 6: M does not correspond to AAT
+#  WARNING: a pepAlnPos 7: A does not correspond to GAT
+#  WARNING: a pepAlnPos 8: K does not correspond to TCC
+#  WARNING: a pepAlnPos 10: L does not correspond to AAG
+#------------------------------------------------------------------------#
+

@@ -1,0 +1,3 @@
+
+ERROR:  "-outform codon" is not valid with -blockonly, -nogap, -nomismatch
+

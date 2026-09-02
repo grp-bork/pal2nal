@@ -1,0 +1,15 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t1_pep.fasta data/allcodons.nuc
+#  Codontable 14 is used
+#  WARNING: probeA pepAlnPos 11: * does not correspond to TAA
+#  WARNING: probeA pepAlnPos 15: * does not correspond to TGA
+#  WARNING: probeA pepAlnPos 43: K does not correspond to AAA
+#  WARNING: probeA pepAlnPos 47: R does not correspond to AGA
+#  WARNING: probeA pepAlnPos 48: R does not correspond to AGG
+#  WARNING: probeB pepAlnPos 11: * does not correspond to TAA
+#  WARNING: probeB pepAlnPos 15: * does not correspond to TGA
+#  WARNING: probeB pepAlnPos 43: K does not correspond to AAA
+#  WARNING: probeB pepAlnPos 47: R does not correspond to AGA
+#  WARNING: probeB pepAlnPos 48: R does not correspond to AGG
+#------------------------------------------------------------------------#
+

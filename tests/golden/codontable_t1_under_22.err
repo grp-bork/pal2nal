@@ -1,0 +1,9 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t1_pep.fasta data/allcodons.nuc
+#  Codontable 22 is used
+#  WARNING: probeA pepAlnPos 7: S does not correspond to TCA
+#  WARNING: probeA pepAlnPos 12: * does not correspond to TAG
+#  WARNING: probeB pepAlnPos 7: S does not correspond to TCA
+#  WARNING: probeB pepAlnPos 12: * does not correspond to TAG
+#------------------------------------------------------------------------#
+

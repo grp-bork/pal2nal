@@ -1,0 +1,7 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t10_pep.fasta data/allcodons.nuc
+#  Codontable 10 is used
+#  WARNING: probeA pepAlnPos 15: C does not correspond to TGA
+#  WARNING: probeB pepAlnPos 15: C does not correspond to TGA
+#------------------------------------------------------------------------#
+

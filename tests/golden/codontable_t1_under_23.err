@@ -1,0 +1,7 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t1_pep.fasta data/allcodons.nuc
+#  Codontable 23 is used
+#  WARNING: probeA pepAlnPos 3: L does not correspond to TTA
+#  WARNING: probeB pepAlnPos 3: L does not correspond to TTA
+#------------------------------------------------------------------------#
+

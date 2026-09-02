@@ -1,0 +1,5 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/dhfr.aln data/dhfr_split1.nuc data/dhfr_split2.nuc
+#  WARNING: pseudogene pepAlnPos 11: V does not correspond to GAT
+#------------------------------------------------------------------------#
+

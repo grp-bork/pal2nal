@@ -1,0 +1,4 @@
+# The test corpus deliberately contains files with CRLF and bare-CR line
+# endings (the Windows/Mac inputs that pal2nal v11 and v13 learned to
+# handle) and binary golden outputs. Git must not normalise any of it.
+* -text

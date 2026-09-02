@@ -1,0 +1,6 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/allcodons_t12_pep.fasta data/allcodons.nuc
+#  WARNING: probeA pepAlnPos 20: S does not correspond to CTG
+#  WARNING: probeB pepAlnPos 20: S does not correspond to CTG
+#------------------------------------------------------------------------#
+
