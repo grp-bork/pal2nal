@@ -25,8 +25,11 @@ have a second opinion that shares no code with the implementation.
 
 from __future__ import annotations
 
+import importlib
 import random
 import re
+from functools import cache
+from itertools import product
 
 import pytest
 
@@ -41,12 +44,92 @@ ALL_CODONS = [
 ]
 
 
+#: Long enough to expose any plausible mis-sized fragment. A wider one
+#: still fails the guard: nothing matches, and the width comes back (0, 0).
+_MAX_PROBE = 5
+
+
+def _probe_characters(fragment: str) -> list[str]:
+    """The characters worth building probe strings from: the fragment's own
+    literals, plus one stand-in for ``.``, which matches anything."""
+    literals = {ch for ch in fragment if ch not in "().|"}
+    if "." in fragment:
+        literals.add("A")
+    return sorted(literals) or ["A"]
+
+
+@cache
+def _measured_width(fragment: str) -> tuple[int, int]:
+    """The fragment's width, using only documented `re` behaviour.
+
+    Every string up to `_MAX_PROBE` long over the fragment's own alphabet
+    is offered to `re.fullmatch`, and the widths that match are the widths
+    the fragment has. Asking for a *full* match at each length separately
+    is what makes this immune to leftmost-first matching: an alternative
+    that is wider than one before it still answers at its own length,
+    where a single `re.match` would only ever report the first to succeed.
+    """
+    chars = _probe_characters(fragment)
+    widths = {
+        length
+        for length in range(1, _MAX_PROBE + 1)
+        for combo in product(chars, repeat=length)
+        if re.fullmatch(fragment, "".join(combo), re.IGNORECASE)
+    }
+    return (min(widths), max(widths)) if widths else (0, 0)
+
+
+def _parser_width(fragment: str) -> tuple[int, int] | None:
+    """`re`'s own parser -- the exact answer, when it can be reached.
+
+    It lives at a private name that CPython has already moved once, from
+    ``sre_parse`` to ``re._parser`` in 3.11, so both are tried and neither
+    being present returns None rather than raising. The guard does not
+    depend on it: `_measured_width` runs either way.
+    """
+    for modname in ("re._parser", "sre_parse"):
+        try:
+            module = importlib.import_module(modname)
+        except ImportError:
+            continue
+        lo, hi = module.parse(fragment).getwidth()
+        return (lo, hi)
+    return None
+
+
 @pytest.mark.parametrize("tid", SUPPORTED)
 def test_every_fragment_is_exactly_three_wide(tid: int) -> None:
     """The invariant the whole matcher rests on."""
     for aa, fragment in P2C[tid].items():
-        lo, hi = re._parser.parse(fragment).getwidth()
-        assert (lo, hi) == (3, 3), f"table {tid}, {aa!r}: {fragment!r} is not 3 wide"
+        measured = _measured_width(fragment)
+        assert measured == (3, 3), f"table {tid}, {aa!r}: {fragment!r} is not 3 wide"
+        exact = _parser_width(fragment)
+        if exact is not None:
+            assert exact == (3, 3), f"table {tid}, {aa!r}: {fragment!r} is not 3 wide"
+            # and the fallback agrees with re itself, wherever re can be asked
+            assert exact == measured, f"table {tid}, {aa!r}: {exact} != {measured}"
+
+
+def test_the_width_fallback_notices_a_bad_fragment() -> None:
+    """The fallback is the guard on a Python where the private parser has
+    moved again, so it has to fail on the shapes the parser would have
+    caught -- including a wider alternative behind a three-wide one, which
+    leftmost-first matching alone would report as merely three."""
+    assert _measured_width("GC.") == (3, 3)
+    assert _measured_width("GC") == (2, 2)
+    assert _measured_width("GCTA") == (4, 4)
+    assert _measured_width("GCT|GCTA") == (3, 4)
+    assert _measured_width("(A|GG)CT") == (3, 4)
+
+
+def test_the_width_fallback_stands_in_for_the_private_parser() -> None:
+    """What the guard falls back to must be what the parser would have said,
+    for every fragment in every table -- not just the ones above."""
+    if _parser_width("GC.") is None:
+        pytest.skip("no private re parser on this interpreter")
+    for tid in SUPPORTED:
+        for fragment in P2C[tid].values():
+            assert _measured_width(fragment) == _parser_width(fragment)
 
 
 @pytest.mark.parametrize("tid", SUPPORTED)

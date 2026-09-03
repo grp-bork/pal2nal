@@ -131,7 +131,9 @@ def branches(fragment: str) -> tuple[Codon, ...]:
     parsed = _parse(fragment)
     if any(len(branch) != 3 for branch in parsed):
         raise ValueError(f"codon pattern is not three wide: {fragment!r}")
-    return tuple(tuple(branch) for branch in parsed)
+    # The check above is what makes every branch a Codon; a length is not
+    # something a type checker can read off it, so name the three positions.
+    return tuple((branch[0], branch[1], branch[2]) for branch in parsed)
 
 
 def codon_matches(fragment: str, codon: str) -> bool:
@@ -224,9 +226,8 @@ class Offsets:
             if pattern is None:
                 positions = self.wildcard(width)
             else:
-                positions = cache.get(pattern)
-                if positions is None:
-                    positions = self.fragment(pattern)
+                cached = cache.get(pattern)
+                positions = self.fragment(pattern) if cached is None else cached
             surviving &= positions >> offset
             if not surviving:
                 return None
