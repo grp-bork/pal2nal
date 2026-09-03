@@ -4,21 +4,22 @@
 
 First release since v14 (2 December 2011), and the first in Python. The
 conversion algorithm is unchanged: v15 reproduces v14's output byte for
-byte on every input except where a defect is fixed below. Each fix has a
-regression test, and v14's own output is kept alongside the new expectation
-so every change is visible as a diff (`tests/golden/` vs `tests/expected/`).
+byte on every input except where this changelog records a change. Each
+change has a regression test, and v14's own output is kept alongside the new
+expectation so every one is visible as a diff (`tests/golden/` vs
+`tests/expected/`).
 
 ### Added
 
 * **Fourteen more genetic codes.** v14 covered every NCBI table that existed
   when it was written in 2011 and rejected anything else, so the ten codes
-  NCBI has published since (24-33) were unavailable. All ten are now
+  NCBI has published since (24–33) were unavailable. All ten are now
   supported, derived from NCBI's `gc.prt` (vendored as
   `tests/data/ncbi_gc.prt`). In tables 27, 28 and 31 every stop codon also
   codes for an amino acid; those codons match both, as NCBI's data says.
-* **Four non-NCBI codes, 34-37.** The alternative bacterial codes found by
-  Shulgina & Eddy (2021, eLife 10:e71402), numbered 34-37 by Wikipedia's
-  "List of genetic codes". NCBI has neither adopted them nor assigned any id
+* **Four non-NCBI codes, 34–37.** The alternative bacterial codes found by
+  Shulgina & Eddy (2021, eLife 10:e71402), numbered 34–37 by Wikipedia's
+  "List of genetic codes". NCBI has neither adopted them nor assigned any ID
   past 33, so **these numbers are Wikipedia's and could collide with a future
   NCBI assignment**. No initiation codons are published for them; the
   bacterial set (table 11) is assumed. `PROVENANCE` and `ASSUMED_STARTS` in
@@ -26,7 +27,7 @@ so every change is visible as a diff (`tests/golden/` vs `tests/expected/`).
 * **`tests/test_codontables.py`**, which decodes every table back into a
   codon-to-residue mapping and checks it against its published source on all
   64 codons. Running it against v14's own hashes reports exactly one wrong
-  codon in the seventeen tables it shipped -- TGA in table 10, below -- which
+  codon in the seventeen tables it shipped — TGA in table 10, below — which
   is how that defect was identified; the test keeps that result on record.
   It also pins the initiation codons, so a future gap cannot pass unnoticed.
 
@@ -36,15 +37,15 @@ v14 read whatever bytes it was handed. Nothing checked the alphabet: a
 character that was not a residue became "X" with a warning, a stray letter
 in the DNA was kept and quietly broke the codon match, and anything that
 was not a letter at all was deleted in silence. When the match then failed,
-the error dumped both sequences back at the caller -- under `-html`, into
+the error dumped both sequences back at the caller — under `-html`, into
 the page it returned. v15 gates both input files first, in
 `pal2nal/validate.py`.
 
 * **Non-ASCII input is refused**, and the message says only how many
   offending characters there are and where the first one is. The input is
   never echoed. This catches the gap typed as an en dash, the UTF-8 byte
-  order mark a Windows editor prepends -- v14 read it as part of the first
-  `>` line, lost that sequence and blamed the sequence count -- and a
+  order mark a Windows editor prepends — v14 read it as part of the first
+  `>` line, lost that sequence and blamed the sequence count — and a
   latin-1 file, which v14 converted silently and wrote the undecodable byte
   straight into an output ID. Undecodable bytes arrive as surrogates and
   are refused with the rest, so a binary upload is rejected rather than
@@ -58,7 +59,7 @@ the page it returned. v15 gates both input files first, in
   seqs"; that message is now reached only by input that really is DNA. The
   report is capped at five sequences, so a wholly corrupt file produces a
   report and not a second data dump. Only letters are checked, because
-  digits, dashes and whitespace are stripped by design -- numbered and
+  digits, dashes and whitespace are stripped by design — numbered and
   gapped FASTA variants depend on it.
 * **`-nomismatch` and `-blockonly` no longer hide a character that is not a
   residue.** Both select which *codons* are reported; in v14 they also
@@ -117,6 +118,9 @@ has no such fallback and is fatal.
   instead of the column maximum, so when the frame-shift digit belonged to
   any sequence but the last, the amino-acid row came out a column short and
   drifted against the codon row from that point on.
+* **`-html` output was not escaped.** IDs and sequences were written into
+  the page raw, so an ID containing `<` or `&` produced broken markup. Both
+  are now escaped.
 * **A repeated FASTA header merged two records but counted them twice**,
   emitting the merged sequence for both. Duplicate IDs are now rejected.
   CLUSTAL input already deduplicated correctly.
@@ -145,9 +149,6 @@ has no such fallback and is fatal.
   wrote `(, );`.
 * **The `bl2seq` diagnostic** printed on a protein/DNA inconsistency. The
   tool is retired; the inconsistency message itself is unchanged.
-* **The mail-a-copy route** (`sendcopy.cgi`, `sendcopy.pl`), which shelled
-  out to `mutt` and was pinned to the v8 tarball.
-* **`clean_tmp.pl`**, the cron job that swept the CGI's scratch files.
 
 ### Notes
 
@@ -159,13 +160,9 @@ has no such fallback and is fatal.
   `tests/golden/` and what v15 does in `tests/expected/`, so every change
   remains a reviewable diff.
 * `tests/reference/pal2nal.v14.pl` keeps the original Perl; `PORTING.md`
-  records the porting decisions. The full Perl and CGI history of the EMBL
-  service, and the notes reconstructing it, are in a separate archive
-  repository.
+  records the porting decisions and numbers the twelve fixed defects, which
+  is the numbering `tests/divergences.tsv` cites.
 
 ## v14 and earlier
 
-See the changelog block at the top of `tests/reference/pal2nal.v14.pl`. The
-earlier releases, replayed commit by commit, are in the separate archive
-repository; they were kept under version-stamped file names rather than as
-revisions, so reading their diffs needs `git log -C --find-copies-harder`.
+See the changelog block at the top of `tests/reference/pal2nal.v14.pl`. 

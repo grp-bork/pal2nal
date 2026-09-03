@@ -8,8 +8,8 @@ untranslated regions, polyA tails, in-frame stop codons and frame shifts,
 which makes it usable on pseudogenes as well as on genes.
 
 This is **v15**, a Python port of `pal2nal.pl` v14 by Mikita Suyama. It
-reproduces v14 byte for byte except for the defects listed in
-[CHANGELOG.md](CHANGELOG.md).
+reproduces v14 byte for byte except where [CHANGELOG.md](CHANGELOG.md)
+records a change.
 
 > Suyama M, Torrents D, Bork P (2006). PAL2NAL: robust conversion of
 > protein sequence alignments into the corresponding codon alignments.
@@ -52,7 +52,7 @@ otherwise.
 | `-h` | usage |
 
 Supported codon tables: 1–6, 9–16, 21–33 (every genetic code NCBI
-defines), plus 34–37. NCBI assigns no id past 33; 34–37 are the alternative
+defines), plus 34–37. NCBI assigns no ID past 33; 34–37 are the alternative
 bacterial codes of Shulgina & Eddy (2021) under Wikipedia's numbering, which
 a future NCBI assignment could collide with. Tables 7 and 8 were retired by
 NCBI in 1995 and 17–20 have never been assigned, so neither is accepted.
@@ -70,12 +70,13 @@ python -m venv .venv && .venv/bin/pip install -e '.[dev]'
 The suite compares the port against output captured from the original Perl.
 `tests/golden/` holds what `pal2nal.v14.pl` produces for every case in
 `tests/cases.tsv`; `tests/expected/` holds the intended output for the cases
-where v15 deliberately differs, each one registered in
+where v15 deliberately differs — 45 of the 127 cases, each registered in
 `tests/divergences.tsv` with a reason. **Those files are evidence: never edit
 one to make a test pass.** See [tests/README.md](tests/README.md).
 
 `tests/reference/pal2nal.v14.pl` is the original implementation, kept so the
-corpus can be regenerated (`cd tests && sh generate_golden.sh`, needs `perl`).
+corpus can be regenerated (`cd tests && sh generate_golden.sh`, needs `perl`)
+and for reproducibility of previous results.
 
 ## Repository layout
 
@@ -85,7 +86,7 @@ corpus can be regenerated (`cd tests && sh generate_golden.sh`, needs `perl`).
 | `tests/` | the golden corpus and the test suite |
 | `examples/` | a small alignment to try the tool on |
 | `CHANGELOG.md` | what changed in v15 and why |
-| `PORTING.md` | porting decisions and the divergence policy |
+| `PORTING.md` | the porting decisions and the evidence behind them |
 
 The web front end, the full Perl and CGI history of the original EMBL
 service, and the notes on how that history was reconstructed live in a

@@ -66,7 +66,7 @@ options.py  parse argv          → inputs.py  read + normalise
 ```
 
 - `codontables.py` — hand-transcribed from the Perl's `%p2c` hashes (there
-  is no generator script), plus tables 24-37 added in v15: amino acid →
+  is no generator script), plus tables 24–37 added in v15: amino acid →
   *regex fragment* matching the codons that could encode it. Alternations
   spell out IUPAC ambiguity (`U|T`, `A|G|R`) and `.` is a degenerate third
   position, so ambiguity codes in the input still match. Two keys are not
@@ -88,7 +88,7 @@ options.py  parse argv          → inputs.py  read + normalise
   alphabet is refused by name. Peptide residues stay lenient — unknown
   characters are taken as X and reported per position, as v14 did — but
   no output filter may hide that report. Error behaviour is explicitly not
-  held to v14's; see "Agreed for v15" in `PORTING.md`.
+  held to v14's; see "Input validation was hardened" in `PORTING.md`.
 
 Note that `pn2codon` is quadratic in sequence length when the peptides and
 the DNA do not correspond. The command-line tool applies no time limit; any
@@ -109,15 +109,16 @@ Reproduced from v14 on purpose, because the goldens pin them:
   `-codontable 1abc` is accepted as 1.
 - `perl_split_lines()` drops trailing empty fields, as Perl's `split` does.
 
-Twelve genuine defects *were* fixed; `CHANGELOG.md` lists them with reasons
-and `PORTING.md` records the decisions. Notably `-codontable 10` (Euplotid
+Twelve genuine defects *were* fixed; `CHANGELOG.md` describes them for
+users and `PORTING.md` numbers them, which is the numbering
+`tests/divergences.tsv` cites. Notably `-codontable 10` (Euplotid
 nuclear) was never implemented in v14 and silently returned universal-code
 results.
 
 `tests/test_codontables.py` decodes every table back into a codon-to-residue
 mapping and diffs it against NCBI's `gc.prt`, vendored as
 `tests/data/ncbi_gc.prt`. That check is what found the table 10 defect, and
-it is the first thing to run after touching a table. Tables 34-37 are **not**
+it is the first thing to run after touching a table. Tables 34–37 are **not**
 NCBI assignments — the numbering is Wikipedia's; see `PROVENANCE` in
 `codontables.py` before adding more.
 
