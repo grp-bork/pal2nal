@@ -1,0 +1,5 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/iupac_mismatch_pep.fasta data/iupac_mismatch.nuc
+#  WARNING: bad2 pepAlnPos 20: I does not correspond to AAA
+#------------------------------------------------------------------------#
+

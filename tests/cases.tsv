@@ -125,3 +125,21 @@ err_protein_as_dna	data/simple_pep.fasta data/protein_as_dna.nuc
 pep_unknown_residue	data/unknown_residue_pep.fasta data/simple.nuc
 pep_unknown_residue_nomismatch	data/unknown_residue_pep.fasta data/simple.nuc -nomismatch
 pep_unknown_residue_blockonly	data/blockonly_unknown.aln data/simple.nuc -blockonly
+rna_output_clustal	data/rna_pep.fasta data/rna.nuc
+rna_output_codon	data/rna_pep.fasta data/rna.nuc -output codon
+rna_output_paml	data/rna_pep.fasta data/rna.nuc -output paml
+iupac_output_clustal	data/iupac_pep.fasta data/iupac.nuc
+iupac_output_codon	data/iupac_pep.fasta data/iupac.nuc -output codon
+iupac_output_fasta	data/iupac_pep.fasta data/iupac.nuc -output fasta
+iupac_nogap	data/iupac_pep.fasta data/iupac.nuc -nogap
+iupac_mismatch	data/iupac_mismatch_pep.fasta data/iupac_mismatch.nuc
+iupac_mismatch_html	data/iupac_mismatch_pep.fasta data/iupac_mismatch.nuc -html
+iupac_mismatch_nomismatch	data/iupac_mismatch_pep.fasta data/iupac_mismatch.nuc -nomismatch
+tfastx_markers	data/tfastx_pep.fasta data/tfastx.nuc
+tfastx_markers_codon	data/tfastx_pep.fasta data/tfastx.nuc -output codon
+tfastx_markers_paml	data/tfastx_pep.fasta data/tfastx.nuc -output paml
+blockedge_clustal	data/blockedge_pep.fasta data/blockedge.nuc
+blockedge_codon	data/blockedge_pep.fasta data/blockedge.nuc -output codon
+blockedge_fasta	data/blockedge_pep.fasta data/blockedge.nuc -output fasta
+allgap_row	data/allgap_pep.fasta data/allgap.nuc
+allgap_row_paml	data/allgap_pep.fasta data/allgap.nuc -output paml

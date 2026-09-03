@@ -1,0 +1,5 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/iupac_pep.fasta data/iupac.nuc
+#  WARNING: amb2 pepAlnPos 6: L does not correspond to ytn
+#------------------------------------------------------------------------#
+

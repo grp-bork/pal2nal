@@ -1,0 +1,11 @@
+<pre>
+#------------------------------------------------------------------------#
+#  WARNING: bad2 pepAlnPos 20: I does not correspond to AAA
+#------------------------------------------------------------------------#
+
+CLUSTAL W multiple sequence alignment
+
+bad1          ATGGCNGARAARGAYCTNCGNTTYTCNTAYTGYTGGAAYCARCAYGTNGGNCCNACNATY
+bad2          ATGGCNGARAARGAYCTNCGNTTYTCNTAYTGYTGGAAYCARCAYGTNGGNCCNACN<FONT color='red'>A</FONT><FONT color='red'>A</FONT><FONT color='red'>A</FONT>
+
+</pre>
