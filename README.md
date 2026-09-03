@@ -9,7 +9,11 @@ which makes it usable on pseudogenes as well as on genes.
 
 This is **v15**, a Python port of `pal2nal.pl` v14 by Mikita Suyama. It
 reproduces v14 byte for byte except where [CHANGELOG.md](CHANGELOG.md)
-records a change.
+records a change. Conversion is also faster than v14 — roughly 3× on a large
+alignment and 10–14× on the inputs that made v14 slowest — because the codon
+patterns are matched directly instead of being compiled into a peptide-length
+regular expression for every sequence. On a small alignment the two are
+comparable: Python's ~50 ms of startup outweighs the work.
 
 > Suyama M, Torrents D, Bork P (2006). PAL2NAL: robust conversion of
 > protein sequence alignments into the corresponding codon alignments.
@@ -70,7 +74,7 @@ python -m venv .venv && .venv/bin/pip install -e '.[dev]'
 The suite compares the port against output captured from the original Perl.
 `tests/golden/` holds what `pal2nal.v14.pl` produces for every case in
 `tests/cases.tsv`; `tests/expected/` holds the intended output for the cases
-where v15 deliberately differs — 45 of the 127 cases, each registered in
+where v15 deliberately differs — 47 of the 145 cases, each registered in
 `tests/divergences.tsv` with a reason. **Those files are evidence: never edit
 one to make a test pass.** See [tests/README.md](tests/README.md).
 

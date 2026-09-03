@@ -102,10 +102,15 @@ def check_text(text: str, source: str) -> None:
 def _offenders(seq: str) -> list[tuple[str, int, int]]:
     """Characters of `seq` outside the nucleotide alphabet, in order of
     first appearance, as (character, count, first 1-based position)."""
+    if not set(seq.upper()) - _NUC_ALPHABET:
+        # the overwhelmingly common answer, and the only one worth getting
+        # off the per-character path for: sequences here can be megabases
+        return []
     found: dict[str, list[int]] = {}
     for i, ch in enumerate(seq):
-        if ch.upper() not in _NUC_ALPHABET:
-            found.setdefault(ch.upper(), [0, i + 1])[0] += 1
+        upper = ch.upper()
+        if upper not in _NUC_ALPHABET:
+            found.setdefault(upper, [0, i + 1])[0] += 1
     return [(ch, n, first) for ch, (n, first) in found.items()]
 
 

@@ -1,14 +1,21 @@
 """The peptide-to-codon matcher: pal2nal.v14.pl sub pn2codon, lines 1159-1919.
 
 The approach is unchanged from v14. Each aligned residue contributes a
-regex fragment matching the codons that could encode it, the fragments are
-concatenated into one pattern, and that pattern is searched (unanchored,
-case-insensitively) against the DNA. If the whole pattern matches, every
-codon is correct by construction. If it does not, the peptide is cut into
-anchors of ten residues; an anchor whose own pattern is found somewhere in
-the DNA keeps its specific pattern, and one that is not found is relaxed to
-wildcards. The mixed pattern is matched again and, this time, each codon is
-checked individually so mismatches can be reported.
+pattern matching the codons that could encode it, the patterns are
+concatenated, and the result is searched (unanchored, case-insensitively)
+against the DNA. If the whole thing matches, every codon is correct by
+construction. If it does not, the peptide is cut into anchors of ten
+residues; an anchor whose own pattern is found somewhere in the DNA keeps
+its specific pattern, and one that is not found is relaxed to wildcards.
+The mixed pattern is matched again and, this time, each codon is checked
+individually so mismatches can be reported.
+
+What is not v14's is who does the searching. The patterns are still the
+transcribed genetic codes of `codontables.P2C`, written as regexes, but
+`codonmatch` reads them directly instead of handing a peptide-length
+pattern to `re` for every sequence. See that module for why; the answers
+are the same ones `re.search` gave, which `tests/test_matcher.py` checks
+fragment by fragment and offset by offset.
 
 Divergences from v14, all agreed and listed in PORTING.md:
 
@@ -23,16 +30,22 @@ Divergences from v14, all agreed and listed in PORTING.md:
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
+from functools import cache
 from typing import Final
 
+from .codonmatch import Offsets, codon_matches
 from .codontables import P2C
 
 #: Residue characters v14 accepts as amino acids (pal2nal.pl:1762).
-_AA_CHARS: Final = re.compile(r"[ACDEFGHIKLMNPQRSTVWY_*XU]")
-_DIGIT: Final = re.compile(r"[0-9]")
-_GAP: Final = re.compile(r"[-.]")
+_AA_CHARS: Final = frozenset("ACDEFGHIKLMNPQRSTVWY_*XU")
+_DIGIT: Final = frozenset("0123456789")
+_GAP: Final = frozenset("-.")
+
+#: A width and the codon pattern that must match there, or None for a
+#: frame-shift numeral, which consumes nucleotides without constraining
+#: them. Concatenating these is what v14 did by joining pattern strings.
+Step = tuple[int, "str | None"]
 
 #: v14 lists U among the accepted residues but defines no pattern for it,
 #: so it contributed nothing and desynchronised everything after it. TGA is
@@ -56,47 +69,43 @@ class CodonResult:
     unknown: list[str] = field(default_factory=list)
 
 
+@cache
 def _patterns(codontable: int) -> dict[str, str]:
     table = dict(P2C[codontable])
     table.setdefault("U", _SELENOCYSTEINE)
     return table
 
 
-def _fragment(aa: str, p2c: dict[str, str]) -> str | None:
-    """The regex fragment for one aligned character, or None for a gap."""
-    if _AA_CHARS.fullmatch(aa):
-        return p2c.get(aa, p2c["X"])
-    if _DIGIT.fullmatch(aa):
-        return "." * int(aa)
-    if _GAP.fullmatch(aa):
-        return None
-    return p2c["X"]
-
-
-def _build_pattern(pep: str, p2c: dict[str, str]) -> tuple[str, list[str]]:
-    """pal2nal.pl:1757-1783. Returns the pattern and, separately, a report
+def _build_steps(pep: str, p2c: dict[str, str]) -> tuple[list[Step], list[str]]:
+    """pal2nal.pl:1757-1783. Returns the steps and, separately, a report
     for every aligned character that is not a residue."""
-    parts: list[str] = []
+    steps: list[Step] = []
     messages: list[str] = []
     seen_letter = False
     for i, aa in enumerate(pep):
         pos = i + 1
-        if _AA_CHARS.fullmatch(aa):
+        if aa in _AA_CHARS:
             if not seen_letter and aa == "M":
                 # the initiating Met, which many tables spell more broadly
-                parts.append(p2c["B"])
+                steps.append((3, p2c["B"]))
             else:
-                parts.append(p2c.get(aa, p2c["X"]))
+                steps.append((3, p2c.get(aa, p2c["X"])))
             seen_letter = True
-        elif _DIGIT.fullmatch(aa):
-            parts.append("." * int(aa))
-        elif _GAP.fullmatch(aa):
+        elif aa in _DIGIT:
+            steps.append((int(aa), None))
+        elif aa in _GAP:
             continue
         else:
             messages.append(f"pepAlnPos {pos}: {aa} unknown AA type. Taken as 'X'")
-            parts.append(p2c["X"])
+            steps.append((3, p2c["X"]))
             seen_letter = True
-    return "".join(parts), messages
+    return steps, messages
+
+
+def _width(steps: list[Step]) -> int:
+    """How many nucleotides the steps consume. Fixed, never a range: that
+    is the property the whole matcher rests on."""
+    return sum(width for width, _ in steps)
 
 
 def _anchors(pep: str) -> list[str]:
@@ -112,7 +121,7 @@ def _anchors(pep: str) -> list[str]:
     count = 0
     for i, aa in enumerate(pep):
         current.append(aa)
-        if not _GAP.fullmatch(aa):
+        if aa not in _GAP:
             count += 1
         if count == 10 or i == len(pep) - 1:
             pre.append("".join(current))
@@ -128,49 +137,51 @@ def _anchors(pep: str) -> list[str]:
 
 def pn2codon(pep: str, nuc: str, codontable: int) -> CodonResult:
     p2c = _patterns(codontable)
-    pattern, unknown = _build_pattern(pep, p2c)
+    steps, unknown = _build_steps(pep, p2c)
+    # one pass over the DNA, shared by the exact match and every anchor
+    offsets = Offsets(nuc)
 
     # exact match: every codon is right by construction, nothing to check
-    if pattern:
-        m = re.search(pattern, nuc, re.IGNORECASE)
-        if m:
-            return CodonResult(OK, m.group(0), unknown=unknown)
+    if steps:
+        start = offsets.search(steps)
+        if start is not None:
+            # sliced from the original, so the DNA's own case survives
+            return CodonResult(OK, nuc[start : start + _width(steps)], unknown=unknown)
 
     # fallback: relax the anchors that cannot be found on their own
-    whole: list[str] = []
+    whole: list[Step] = []
     for index, anchor in enumerate(_anchors(pep)):
-        specific: list[str] = []
-        relaxed: list[str] = []
+        specific: list[Step] = []
+        relaxed: list[Step] = []
         first_anchor = index == 0
         seen_letter = False
         for aa in anchor:
-            if _AA_CHARS.fullmatch(aa):
+            if aa in _AA_CHARS:
                 if first_anchor and not seen_letter and aa == "M":
-                    specific.append(p2c["B"])
+                    specific.append((3, p2c["B"]))
                 else:
-                    specific.append(p2c.get(aa, p2c["X"]))
-                relaxed.append(p2c["X"])
+                    specific.append((3, p2c.get(aa, p2c["X"])))
+                relaxed.append((3, p2c["X"]))
                 seen_letter = True
-            elif _DIGIT.fullmatch(aa):
-                specific.append("." * int(aa))
-                relaxed.append("." * int(aa))
-            elif _GAP.fullmatch(aa):
+            elif aa in _DIGIT:
+                specific.append((int(aa), None))
+                relaxed.append((int(aa), None))
+            elif aa in _GAP:
                 continue
             else:
-                specific.append(p2c["X"])
-                relaxed.append(p2c["X"])
+                specific.append((3, p2c["X"]))
+                relaxed.append((3, p2c["X"]))
                 seen_letter = True
-        joined = "".join(specific)
-        whole.append(joined if joined and re.search(joined, nuc, re.IGNORECASE) else "".join(relaxed))
+        found = bool(specific) and offsets.search(specific) is not None
+        whole.extend(specific if found else relaxed)
 
-    combined = "".join(whole)
-    if not combined:
+    if not whole:
         return CodonResult(NO_MATCH, unknown=unknown)
-    m = re.search(combined, nuc, re.IGNORECASE)
-    if not m:
+    start = offsets.search(whole)
+    if start is None:
         return CodonResult(NO_MATCH, unknown=unknown)
 
-    codon = m.group(0)
+    codon = nuc[start : start + _width(whole)]
     return CodonResult(MISMATCH, codon, _check_codons(pep, codon, p2c), unknown)
 
 
@@ -181,15 +192,15 @@ def _check_codons(pep: str, codon: str, p2c: dict[str, str]) -> list[str]:
     residue_count = 0
     for i, aa in enumerate(pep):
         pos = i + 1
-        if _DIGIT.fullmatch(aa):
+        if aa in _DIGIT:
             pos_in_codon += int(aa)
             continue
-        if _GAP.fullmatch(aa):
+        if aa in _GAP:
             continue
         residue_count += 1
         tmpcodon = codon[pos_in_codon : pos_in_codon + 3]
         pos_in_codon += 3
         expected = p2c["B"] if residue_count == 1 and aa == "M" else p2c.get(aa)
-        if expected is None or not re.search(expected, tmpcodon, re.IGNORECASE):
+        if expected is None or not codon_matches(expected, tmpcodon):
             messages.append(f"pepAlnPos {pos}: {aa} does not correspond to {tmpcodon}")
     return messages

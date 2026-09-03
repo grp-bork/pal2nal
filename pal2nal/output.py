@@ -14,10 +14,11 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from itertools import islice, zip_longest
 from typing import Final, TextIO
 
-_DIGIT: Final = re.compile(r"[0-9]")
-_GAP: Final = re.compile(r"[-.]")
+_DIGIT: Final = frozenset("0123456789")
+_GAP: Final = frozenset("-.")
 #: in-frame stop codons removed by -nogap (pal2nal.pl:857)
 _STOP: Final = re.compile(r"(((U|T)A(A|G|R))|((T|U)GA))", re.IGNORECASE)
 _BLOCK_WIDTH: Final = 60
@@ -49,33 +50,44 @@ def build(
     nomismatch: bool = False,
 ) -> Alignment:
     """pal2nal.pl:736-838 -- reinsert gaps and apply the column filters."""
-    aln = Alignment(ids=ids, codonaln=["" for _ in ids], coloraln=["" for _ in ids])
+    aln = Alignment(ids=ids)
+    codon_parts: list[list[str]] = [[] for _ in ids]
+    colour_parts: list[list[str]] = [[] for _ in ids]
+    mask_parts: list[str] = []
     cursors = [0 for _ in ids]
     has_blocks = "#" in blockseq
     alnlen = len(aaseqs[0]) if aaseqs else 0
+    # a frame-shift numeral is the only thing that widens a column, and
+    # most alignments have none; the columns of most that do are still 3
+    has_digits = any(_DIGIT & set(seq) for seq in aaseqs)
+    # mismatches is keyed by (id, column) but -nomismatch asks only whether
+    # *any* sequence mismatches in the column, and only ids in `ids` are
+    # ever recorded
+    mismatched_cols = {col for _, col in mismatches}
+    # short sequences are read as gaps, exactly as the indexed form did
+    columns = islice(zip_longest(*aaseqs, fillvalue="-"), alnlen)
 
-    for col in range(alnlen):
-        column = [seq[col] if col < len(seq) else "-" for seq in aaseqs]
-
+    for col, column in enumerate(columns):
         # the column is as wide as its widest entry needs
         width = 3
-        for aa in column:
-            if _DIGIT.fullmatch(aa):
-                width = max(width, -(-int(aa) // 3) * 3)
+        if has_digits:
+            for aa in column:
+                if aa in _DIGIT:
+                    width = max(width, -(-int(aa) // 3) * 3)
         put = True
         if has_blocks and blockonly and blockseq[col : col + 1] != "#":
             put = False
-        if nomismatch and any((sid, col) in mismatches for sid in ids):
+        if nomismatch and col in mismatched_cols:
             put = False
 
         for k, aa in enumerate(column):
-            if _DIGIT.fullmatch(aa):
+            if aa in _DIGIT:
                 take = int(aa)
                 piece = codonseqs[k][cursors[k] : cursors[k] + take]
                 cursors[k] += take
                 piece += "-" * (width - len(piece))
                 colour = "-" * width
-            elif _GAP.fullmatch(aa):
+            elif aa in _GAP:
                 piece = "-" * width
                 colour = "-" * width
             else:
@@ -85,11 +97,14 @@ def build(
                 mark = "R" if (ids[k], col) in mismatches else "-"
                 colour = mark * 3 + "-" * (width - 3)
             if put:
-                aln.codonaln[k] += piece
-                aln.coloraln[k] += colour
+                codon_parts[k].append(piece)
+                colour_parts[k].append(colour)
         if put and not blockonly:
             marker = blockseq[col : col + 1] or " "
-            aln.maskseq += marker * width
+            mask_parts.append(marker * width)
+    aln.codonaln = ["".join(parts) for parts in codon_parts]
+    aln.coloraln = ["".join(parts) for parts in colour_parts]
+    aln.maskseq = "".join(mask_parts)
     return aln
 
 
@@ -168,15 +183,12 @@ def write_alignment(
     out.write("\n")
     blocks = chunk(aln.codonaln[0], _BLOCK_WIDTH)
     masks = chunk(aln.maskseq, _BLOCK_WIDTH)
+    codon_blocks = [chunk(seq, _BLOCK_WIDTH) for seq in aln.codonaln]
+    colour_blocks = [chunk(seq, _BLOCK_WIDTH) for seq in aln.coloraln]
     for b in range(len(blocks)):
         for k, sid in enumerate(aln.ids):
             out.write(f"{sid:<{idw}}    ")
-            _emit(
-                out,
-                chunk(aln.codonaln[k], _BLOCK_WIDTH)[b],
-                chunk(aln.coloraln[k], _BLOCK_WIDTH)[b],
-                html,
-            )
+            _emit(out, codon_blocks[k][b], colour_blocks[k][b], html)
         if show_mask:
             mask = masks[b] if b < len(masks) else ""
             out.write(f"{' ':<{idw}}    {mask}\n")
@@ -193,7 +205,7 @@ def _peptide_rows(aaseqs: list[str]) -> list[str]:
     any other sequence the peptide row came out a column short and drifted
     against the codon row. The column maximum is used here instead.
     """
-    if not any(_DIGIT.search(s) for s in aaseqs):
+    if not any(_DIGIT & set(s) for s in aaseqs):
         return list(aaseqs)
     rows = ["" for _ in aaseqs]
     alnlen = len(aaseqs[0]) if aaseqs else 0
@@ -201,7 +213,7 @@ def _peptide_rows(aaseqs: list[str]) -> list[str]:
         column = [s[col] if col < len(s) else "-" for s in aaseqs]
         maxaan = 0
         for aa in column:
-            if _DIGIT.fullmatch(aa):
+            if aa in _DIGIT:
                 maxaan = max(maxaan, int(aa))
         slots = (maxaan - 1) // 3 + 1 if maxaan >= 4 else 1
         for k, aa in enumerate(column):
@@ -215,15 +227,18 @@ def _write_codon(
     peps = _peptide_rows(aaseqs)
     blocks = chunk(aln.codonaln[0], _BLOCK_WIDTH)
     masks = chunk(aln.maskseq, _BLOCK_WIDTH)
+    pep_blocks = [chunk(pep, _CODON_PEP_WIDTH) for pep in peps]
+    codon_blocks = [chunk(seq, _BLOCK_WIDTH) for seq in aln.codonaln]
+    colour_blocks = [chunk(seq, _BLOCK_WIDTH) for seq in aln.coloraln]
     for b in range(len(blocks)):
         for k, sid in enumerate(aln.ids):
-            pep_chunks = chunk(peps[k], _CODON_PEP_WIDTH)
+            pep_chunks = pep_blocks[k]
             pep = pep_chunks[b] if b < len(pep_chunks) else ""
             out.write(f"{'':<{idw}}    ")
             out.write("   ".join(pep) + "\n")
 
-            codon_chunk = chunk(aln.codonaln[k], _BLOCK_WIDTH)[b]
-            colour_chunk = chunk(aln.coloraln[k], _BLOCK_WIDTH)[b]
+            codon_chunk = codon_blocks[k][b]
+            colour_chunk = colour_blocks[k][b]
             out.write(f"{sid:<{idw}}    ")
             spaced = " ".join(chunk(codon_chunk, 3))
             spaced_colour = " ".join(chunk(colour_chunk, 3))

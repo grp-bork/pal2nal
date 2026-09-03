@@ -61,6 +61,7 @@ The pipeline mirrors the Perl's control flow, one module per stage:
 options.py  parse argv          → inputs.py  read + normalise
             → validate.py match the input against the expected alphabet
             → convert.py  match peptides to codons
+                          (via codonmatch.py, the matcher itself)
             → output.py   reinsert gaps, filter, format
             → cli.py      orchestrate, route messages to stdout/stderr
 ```
@@ -71,12 +72,29 @@ options.py  parse argv          → inputs.py  read + normalise
   spell out IUPAC ambiguity (`U|T`, `A|G|R`) and `.` is a degenerate third
   position, so ambiguity codes in the input still match. Two keys are not
   amino acids: `B` is the table's initiation codons, `X` is any codon.
-- `convert.py` — the core. Concatenate every residue's fragment into one
-  pattern and search the DNA unanchored and case-insensitively. If it
-  matches, every codon is correct by construction and nothing is checked.
-  If not, cut the peptide into ten-residue anchors, relax any anchor that
-  cannot be found on its own to wildcards, match the mixed pattern, then
-  verify each codon individually so mismatches can be reported.
+- `convert.py` — the core, and v14's control flow unchanged. Concatenate
+  every residue's fragment and search the DNA unanchored and
+  case-insensitively. If it matches, every codon is correct by construction
+  and nothing is checked. If not, cut the peptide into ten-residue anchors,
+  relax any anchor that cannot be found on its own to wildcards, match the
+  mixed pattern, then verify each codon individually so mismatches can be
+  reported.
+- `codonmatch.py` — who does that searching, and the one part that is not
+  a transcription of the Perl. **Every fragment in every table matches
+  exactly three characters**, so a concatenated pattern is fixed-width and
+  "the leftmost match" is just the smallest offset at which every fragment
+  matches its own codon; backtracking cannot change the answer. So the
+  fragments are read directly — one integer per alphabet character holding
+  that character's positions, built with `str.translate`, and one shifted
+  AND per residue — instead of building a peptide-length regex and handing
+  it to `re`, whose parser is written in Python and cost more than the
+  matching did. The answers are the ones `re.search` gave;
+  `tests/test_matcher.py` checks that fragment by fragment against `re`
+  itself, and offset by offset on random input, and the golden corpus
+  covers it end to end. If you change a table, that test is the one that
+  matters: a fragment that is not three wide, or that uses a regex feature
+  beyond grouping and alternation, is rejected outright rather than
+  silently mismatched.
 - `output.py` — `pn2codon` returns codons with no gaps; gaps are put back by
   walking the peptide alignment column by column. Column width is set by the
   widest entry, so a frame shift consuming four nucleotides in one sequence
@@ -90,9 +108,11 @@ options.py  parse argv          → inputs.py  read + normalise
   no output filter may hide that report. Error behaviour is explicitly not
   held to v14's; see "Input validation was hardened" in `PORTING.md`.
 
-Note that `pn2codon` is quadratic in sequence length when the peptides and
-the DNA do not correspond. The command-line tool applies no time limit; any
-caller exposing it to untrusted input has to bound it itself.
+Note that `pn2codon` is still quadratic in sequence length when the peptides
+and the DNA do not correspond — bit-parallel, so the constant is per machine
+word rather than per nucleotide, but the shape is unchanged. The command-line
+tool applies no time limit; any caller exposing it to untrusted input has to
+bound it itself.
 
 ## Behaviours that look like bugs but are deliberate
 

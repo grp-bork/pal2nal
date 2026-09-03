@@ -198,6 +198,9 @@ def read_nucleotides(paths: list[str]) -> NucSequences:
     so an id repeated in another file simply extends the same sequence.
     Case is preserved here; only the peptide side is upper-cased."""
     nuc = NucSequences()
+    # accumulated per id and joined once: "seq = seq + line" over a FASTA
+    # file is quadratic in the length of the sequence
+    chunks: dict[str, list[str]] = {}
     tmpid = ""
     for path in paths:
         with open(path, encoding="utf-8", errors="surrogateescape") as fh:
@@ -211,7 +214,12 @@ def read_nucleotides(paths: list[str]) -> NucSequences:
                 tmpid = m.group(1)
                 nuc.ids.append(tmpid)
             else:
-                nuc.id2seq[tmpid] = nuc.id2seq.get(tmpid, "") + _NON_LETTER.sub("", line)
+                chunks.setdefault(tmpid, []).append(line)
+    # stripping per sequence rather than per line: the substitution is
+    # per character either way, and there is one call instead of thousands
+    nuc.id2seq = {
+        seq_id: _NON_LETTER.sub("", "".join(parts)) for seq_id, parts in chunks.items()
+    }
     # only letters survive the strip above, so this catches stray residues
     # and prose, not the digits and dashes of numbered or gapped FASTA
     check_nucleotide_alphabet(nuc.id2seq)
