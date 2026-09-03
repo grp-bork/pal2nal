@@ -1,6 +1,6 @@
 # Changelog
 
-## v15.0 (2 September 2026)
+## v15.0 (3 September 2026)
 
 First release since v14 (2 December 2011), and the first in Python. The
 conversion algorithm is unchanged: v15 reproduces v14's output byte for

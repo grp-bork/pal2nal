@@ -7,10 +7,11 @@ requires-python = ">=3.11"
 license = { text = "MIT" }
 authors = [
     { name = "Mikita Suyama" },
+    { name = "Michael Kuhn" },
 ]
 keywords = ["bioinformatics", "alignment", "codon", "genetics", "phylogenetics"]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
