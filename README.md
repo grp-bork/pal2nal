@@ -54,6 +54,7 @@ otherwise.
 | `-html` | HTML output |
 | `-nostderr` | suppress messages |
 | `-h` | usage |
+| `--version` | print the version and stop |
 
 Supported codon tables: 1–6, 9–16, 21–33 (every genetic code NCBI
 defines), plus 34–37. NCBI assigns no ID past 33; 34–37 are the alternative
@@ -74,7 +75,7 @@ python -m venv .venv && .venv/bin/pip install -e '.[dev]'
 The suite compares the port against output captured from the original Perl.
 `tests/golden/` holds what `pal2nal.v14.pl` produces for every case in
 `tests/cases.tsv`; `tests/expected/` holds the intended output for the cases
-where v15 deliberately differs — 47 of the 145 cases, each registered in
+where v15 deliberately differs — 50 of the 148 cases, each registered in
 `tests/divergences.tsv` with a reason. **Those files are evidence: never edit
 one to make a test pass.** See [tests/README.md](tests/README.md).
 

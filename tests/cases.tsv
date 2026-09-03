@@ -143,3 +143,6 @@ blockedge_codon	data/blockedge_pep.fasta data/blockedge.nuc -output codon
 blockedge_fasta	data/blockedge_pep.fasta data/blockedge.nuc -output fasta
 allgap_row	data/allgap_pep.fasta data/allgap.nuc
 allgap_row_paml	data/allgap_pep.fasta data/allgap.nuc -output paml
+version_flag	--version
+version_flag_single_dash	-version
+version_flag_after_files	data/simple_pep.fasta data/simple.nuc --version

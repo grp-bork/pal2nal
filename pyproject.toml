@@ -1,6 +1,6 @@
 [project]
 name = "pal2nal"
-version = "15.0"
+dynamic = ["version"]
 description = "Convert a protein sequence alignment and the corresponding DNA sequences into a codon alignment"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -35,6 +35,13 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["pal2nal*"]
+
+# One place holds the version: pal2nal/__init__.py. setuptools reads it
+# from there at build time, so the distribution metadata that
+# importlib.metadata.version("pal2nal") reports cannot drift from what the
+# package itself reports, and neither needs updating by hand twice.
+[tool.setuptools.dynamic]
+version = { attr = "pal2nal.__version__" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -8,14 +8,19 @@ from __future__ import annotations
 
 import html as html_module
 import sys
-from typing import TextIO
+from typing import Final, TextIO
 
-from . import inputs, output
+from . import __version__, inputs, output
 from .convert import NO_MATCH, pn2codon
 from .options import Exit, Options, check_combinations, parse_args
 from .validate import InputError
 
 RULE = "#------------------------------------------------------------------------#"
+
+#: New in v15; v14 had no way to report its own version. Both spellings are
+#: accepted: the tool's own options take a single dash, but "--version" is
+#: what everything else in a pipeline tries first.
+_VERSION_FLAGS: Final = frozenset({"-version", "--version"})
 
 
 def _esc(text: str, html: bool) -> str:
@@ -167,6 +172,15 @@ def _inconsistency(opt: Options, aa_id: str, nuc_id: str, pep: str, dna: str) ->
 def main(argv: list[str] | None = None) -> int:
     args = list(sys.argv[1:] if argv is None else argv)
     out, err = sys.stdout, sys.stderr
+
+    # Before anything else, including the "fewer than two arguments prints
+    # usage" rule -- "pal2nal --version" is a single argument and has to
+    # report the version rather than the usage text. On stdout, unlike -h:
+    # this exists to be read by whatever is recording which version ran.
+    if _VERSION_FLAGS & set(args):
+        out.write(f"pal2nal {__version__}\n")
+        return 0
+
     try:
         opt = parse_args(args, stderr=err)
         if not opt.alnfile or not opt.nucfiles:

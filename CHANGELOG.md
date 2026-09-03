@@ -139,6 +139,32 @@ has no such fallback and is fatal.
 * **A missing option value is an error.** A trailing `-output` or
   `-codontable` was ignored and the default used, and `-output -html`
   consumed `-html` as the format name.
+* **`--version` reports the version** on stdout and stops. v14 had no way
+  to say which version was running, which a pipeline recording its tools
+  needs. `-version` is accepted too, since every other option here takes a
+  single dash. The version itself lives in one place,
+  `pal2nal/__init__.py`; `pyproject.toml` reads it from there at build
+  time, so `importlib.metadata.version("pal2nal")` cannot disagree with it.
+
+### Performance
+
+The conversion algorithm is unchanged and so is every byte of output; this
+is about how the codon patterns are matched, not which codons are found.
+
+* **Conversion is 3–14× faster than v14** on large and pathological input,
+  and 12–19× faster than the first cut of v15. v14 concatenated one regex
+  fragment per aligned residue and handed the result to the regex engine,
+  which meant a 40 kB pattern per sequence for a 3000-residue alignment;
+  under Python, compiling that pattern cost several times more than the
+  matching did. Every fragment in every table matches exactly three
+  characters, so the concatenation is fixed-width and can be matched by
+  shifting and ANDing bit sets instead — `pal2nal/codonmatch.py`. The
+  tables stay written as regexes: they are the specification.
+* On a **small** alignment v15 and v14 are comparable, because Python's
+  ~50 ms of interpreter startup outweighs the work.
+* The worst case — a peptide that nearly matches the DNA at many offsets —
+  is **still quadratic**, now bit-parallel rather than per nucleotide. Any
+  caller exposing this to untrusted input still has to bound it.
 
 ### Removed
 
