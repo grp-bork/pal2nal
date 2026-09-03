@@ -75,7 +75,7 @@ python -m venv .venv && .venv/bin/pip install -e '.[dev]'
 The suite compares the port against output captured from the original Perl.
 `tests/golden/` holds what `pal2nal.v14.pl` produces for every case in
 `tests/cases.tsv`; `tests/expected/` holds the intended output for the cases
-where v15 deliberately differs — 50 of the 148 cases, each registered in
+where v15 deliberately differs — 53 of the 148 cases, each registered in
 `tests/divergences.tsv` with a reason. **Those files are evidence: never edit
 one to make a test pass.** See [tests/README.md](tests/README.md).
 

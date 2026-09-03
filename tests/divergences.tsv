@@ -52,3 +52,6 @@ allgap_row_paml	Same all-gap row under -output paml: the failure happens before 
 version_flag	New in v15: --version reports the version on stdout and stops. v14 has no such option, so it fell through to the "fewer than two arguments" rule and printed the usage text on stderr instead.
 version_flag_single_dash	Same option under the single-dash spelling the tool's other options use. v14 treats it the same way as --version, i.e. as no option at all.
 version_flag_after_files	Same option in trailing position: v14 has no version flag, so it read "--version" as another DNA file and died with Perl's "Can't open" message. v15 reports the version wherever the flag appears.
+help_flag	Usage text gains one line: v15 has a --version option and v14 has none, so -h lists it. Every other line is still byte for byte the Perl's, so golden/help_flag.err remains a usable diff.
+usage_no_args	Same added --version line, reached by the "fewer than two arguments prints usage" rule rather than by -h.
+usage_one_arg	Same added --version line, reached with a single argument.

@@ -1,9 +1,13 @@
-"""The usage text, reproduced verbatim from pal2nal.v14.pl:1942.
+"""The usage text, captured from pal2nal.v14.pl:1942 rather than retyped.
 
-Captured from the Perl's own output rather than retyped, so the layout --
-including the trailing space after "Show help" -- is exact. In v14 this
-always went to stderr even under -html, and -h did not stop the run; v15
-still writes to stderr but exits (see PORTING.md).
+The layout is v14's own, trailing space after "Show help" included, and the
+only line v15 adds is --version, which v14 has no equivalent of; leaving it
+out would mean shipping an option that -h denies exists. Everything else is
+byte for byte the Perl's, so `tests/golden/help_flag.err` stays a usable
+diff against it.
+
+In v14 this always went to stderr even under -html, and -h did not stop the
+run; v15 still writes to stderr but exits (see PORTING.md).
 """
 
 from __future__ import annotations
@@ -22,6 +26,8 @@ Usage:  pal2nal.pl  pep.aln  nuc.fasta  [nuc.fasta...]  [options]
     nuc.fasta:  DNA sequences (single multi-fasta or separated files)
 
     Options:  -h            Show help 
+
+              --version     Show the version and exit
 
               -output (clustal|paml|fasta|codon)
                             Output format; default = clustal

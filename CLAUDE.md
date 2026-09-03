@@ -151,5 +151,14 @@ NCBI assignments — the numbering is Wikipedia's; see `PROVENANCE` in
 - Goldens embed the input paths from the command line, so `cases.tsv` uses
   relative paths and both the runner and `test_golden.py` must execute from
   `tests/`.
+- **`rm -rf build` before building a wheel.** `build/` is gitignored and
+  setuptools reuses `build/lib/pal2nal/*.py` from earlier builds while
+  re-reading the version from the live `pal2nal/__init__.py`, so a wheel can
+  carry correct metadata and stale code. Checking the metadata does not
+  catch it; install the wheel into a throwaway venv and import it.
+- The version is written in exactly one place, `pal2nal/__init__.py`.
+  `pyproject.toml` derives it (`[tool.setuptools.dynamic]`), which is what
+  makes `importlib.metadata.version("pal2nal")` agree with it. Do not add a
+  second copy.
 - dS/dN via PAML `codeml` and the `bl2seq` diagnostic were dropped; don't
   reintroduce them without asking.

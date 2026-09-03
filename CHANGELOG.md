@@ -139,12 +139,14 @@ has no such fallback and is fatal.
 * **A missing option value is an error.** A trailing `-output` or
   `-codontable` was ignored and the default used, and `-output -html`
   consumed `-html` as the format name.
-* **`--version` reports the version** on stdout and stops. v14 had no way
-  to say which version was running, which a pipeline recording its tools
-  needs. `-version` is accepted too, since every other option here takes a
-  single dash. The version itself lives in one place,
+* **`--version` reports the version** on stdout and stops, and `-h` lists
+  it. v14 had no way to say which version was running, which a pipeline
+  recording its tools needs. `-version` is accepted too, since every other
+  option here takes a single dash. The version itself lives in one place,
   `pal2nal/__init__.py`; `pyproject.toml` reads it from there at build
   time, so `importlib.metadata.version("pal2nal")` cannot disagree with it.
+  This is the only line v15 adds to the usage text; the rest is still v14's
+  own, trailing whitespace included.
 
 ### Performance
 
