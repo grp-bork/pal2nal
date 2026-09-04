@@ -129,7 +129,7 @@ Reproduced from v14 on purpose, because the goldens pin them:
   `-codontable 1abc` is accepted as 1.
 - `perl_split_lines()` drops trailing empty fields, as Perl's `split` does.
 
-Twelve genuine defects *were* fixed; `CHANGELOG.md` describes them for
+Sixteen genuine defects *were* fixed; `CHANGELOG.md` describes them for
 users and `PORTING.md` numbers them, which is the numbering
 `tests/divergences.tsv` cites. Notably `-codontable 10` (Euplotid
 nuclear) was never implemented in v14 and silently returned universal-code

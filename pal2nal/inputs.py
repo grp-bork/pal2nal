@@ -21,7 +21,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from .validate import check_nucleotide_alphabet, check_text
+from .validate import check_alignment_widths, check_nucleotide_alphabet, check_text
 
 _NEWLINES = re.compile(r"\x0D\x0A|\x0D|\x0A")
 _FASTA_HEADER = re.compile(r"^>(\S+)")
@@ -99,6 +99,7 @@ def read_alignment(path: str) -> Alignment:
         _parse_gblocks(lines, aln)
     else:
         _parse_clustal(lines, aln)
+    check_alignment_widths(aln.ids, aln.sequences)
     return aln
 
 

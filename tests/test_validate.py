@@ -9,7 +9,12 @@ from __future__ import annotations
 
 import pytest
 
-from pal2nal.validate import InputError, check_nucleotide_alphabet, check_text
+from pal2nal.validate import (
+    InputError,
+    check_alignment_widths,
+    check_nucleotide_alphabet,
+    check_text,
+)
 
 
 def message_of(text: str, source: str = "input") -> str:
@@ -92,3 +97,64 @@ def test_the_report_is_bounded() -> None:
     message = exc.value.message
     assert message.count("first at nucleotide") == 5
     assert "and 15 more sequence(s)" in message
+
+
+# --------------------------------------------------------------------------
+# the alignment must be a rectangle
+# --------------------------------------------------------------------------
+
+
+def test_equal_width_rows_pass() -> None:
+    check_alignment_widths(["a", "b", "c"], ["MAKQ", "M-KQ", "MAK."])
+
+
+@pytest.mark.parametrize("rows", [[], ["MAKQ"]])
+def test_nothing_to_compare_passes(rows: list[str]) -> None:
+    check_alignment_widths([f"s{i}" for i in range(len(rows))], rows)
+
+
+def test_a_ragged_row_is_refused() -> None:
+    with pytest.raises(InputError) as e:
+        check_alignment_widths(["query", "ref"], ["AX1-GTV", "AIHGTV"])
+    assert "query: 7" in e.value.message
+    assert "ref: 6" in e.value.message
+
+
+def test_row_order_does_not_change_the_verdict() -> None:
+    """v14's answer depended on it: the first row set the alignment length."""
+    ids, rows = ["query", "ref"], ["AX1-GTV", "AIHGTV"]
+    with pytest.raises(InputError) as first:
+        check_alignment_widths(ids, rows)
+    with pytest.raises(InputError) as second:
+        check_alignment_widths(ids[::-1], rows[::-1])
+    assert "query: 7" in second.value.message and "ref: 6" in second.value.message
+    assert first.value.message.count("\n") == second.value.message.count("\n")
+
+
+def test_a_majority_width_is_named_and_only_the_odd_rows_listed() -> None:
+    with pytest.raises(InputError) as e:
+        check_alignment_widths(["a", "b", "c", "d"], ["MVLSQ", "MVLSQ", "MVLS", "MVLSQ"])
+    message = e.value.message
+    assert "most have 5 columns" in message
+    assert "c: 4" in message
+    for absent in ("a: 5", "b: 5", "d: 5"):
+        assert absent not in message
+
+
+def test_no_majority_is_not_claimed_as_one() -> None:
+    """Two rows of different lengths give no grounds for calling either intended."""
+    with pytest.raises(InputError) as e:
+        check_alignment_widths(["a", "b"], ["MVLSQ", "MVLS"])
+    assert "most have" not in e.value.message
+
+
+def test_the_report_is_bounded_and_never_echoes_the_rows() -> None:
+    rows = ["MVLSQAD"] * 10 + ["MVLSQADK"] * 8  # majority 7, eight odd rows
+    ids = [f"s{i}" for i in range(len(rows))]
+    with pytest.raises(InputError) as e:
+        check_alignment_widths(ids, rows)
+    message = e.value.message
+    assert "most have 7 columns" in message
+    assert "... and 3 more sequence(s)" in message
+    assert "MVLSQAD" not in message
+    assert len(message.splitlines()) < 12

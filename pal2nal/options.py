@@ -128,6 +128,10 @@ def check_combinations(opt: Options, out: TextIO, err: TextIO) -> None:
 
     Runs after the <pre> banner has already been emitted in html mode, and
     reports on stdout there rather than stderr.
+
+    v14 named the option "-outform" here, which the tool has never had: the
+    flag is "-output", and a user following the message got "invalid output
+    format" from the next run. The message names the real option.
     """
     if opt.outform == "codon" and (opt.blockonly or opt.nogap or opt.nomismatch):
         if opt.html:
@@ -138,7 +142,7 @@ def check_combinations(opt: Options, out: TextIO, err: TextIO) -> None:
             )
         else:
             err.write(
-                '\nERROR:  "-outform codon" is not valid with '
+                '\nERROR:  "-output codon" is not valid with '
                 "-blockonly, -nogap, -nomismatch\n\n"
             )
         raise Exit(1)

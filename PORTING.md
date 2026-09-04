@@ -97,8 +97,8 @@ NCBI's list.
 
 ## Defects fixed
 
-Twelve genuine defects were fixed. The numbers below are the ones
-`tests/divergences.tsv` cites; `CHANGELOG.md` describes the same twelve for
+Sixteen genuine defects were fixed. The numbers below are the ones
+`tests/divergences.tsv` cites; `CHANGELOG.md` describes the same sixteen for
 users. In each case v14's behaviour stays recorded in `tests/golden/` and
 the new behaviour in `tests/expected/`.
 
@@ -129,6 +129,11 @@ the new behaviour in `tests/expected/`.
 6. **Missing option values.** `-output` or `-codontable` as the final token
    was silently ignored and the default used, and `-output -html` consumed
    `-html` as the format. v15 reports an error.
+15. **A non-existent option in an error message.** Rejecting `-output
+   codon` alongside a filter, v14 reported `"-outform codon" is not valid
+   with -blockonly, -nogap, -nomismatch`. The tool has never had an
+   `-outform` option, so following the message produced "invalid output
+   format" from the next run. v15 names `-output`.
 
 ### Matching and output
 
@@ -157,6 +162,29 @@ the new behaviour in `tests/expected/`.
 12. **HTML escaping.** v14 wrote IDs and sequences into `-html` output raw,
     so an ID containing `<` or `&` produced broken markup. v15 escapes
     them, and an error under `-html` closes the `<pre>` it opened.
+13. **`-nogap` stop codons.** The filter tested for a stop with the
+    universal code's TAA/TAG/TGA written out literally (line 857), ignoring
+    `-codontable`, so on every other code it erred in both directions at
+    once: under table 6 it deleted the TAA and TAG columns that spell Gln,
+    and under table 2 it deleted the TGA column that spells Trp while
+    keeping the AGA and AGG stops the option exists to remove. `-nogap` is
+    what prepares an alignment for dS/dN, so this both dropped good codons
+    and let a real in-frame stop through. v15 uses the selected table's own
+    `*` pattern, the same one the matcher uses.
+16. **Ragged alignments.** The alignment length was read off whichever
+    row happened to be first, so a file whose rows differed in width was
+    mangled one of two ways depending only on the order the sequences
+    appeared in. With the long row first the short ones simply ran out and
+    printed a row a column short; with the short row first the tail of
+    every longer row was dropped, taking real codons with it. Both exited
+    0 with no message. v15 refuses the file, names the rows and their
+    lengths, and does not guess which width was meant.
+14. **The Gblocks parser.** `$getaln` was reset to 0 at the top of every
+    line of a Gblocks-format file, before the branch that consumes the
+    data (line 433), so every sequence line was discarded and the run died
+    with "number of input seqs differ (aa: 0; nuc: 2)". The format could
+    never have worked. v15 keeps the flag across lines; the `#` mask on the
+    Gblocks line then also reaches `-blockonly`.
 
 ## Input validation was hardened
 

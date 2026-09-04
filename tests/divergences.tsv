@@ -11,15 +11,21 @@ ciliate_under_t1	Same short-peptide fallback fix: the 4-residue ciliate probe un
 err_missing_file	v14 relies on Perl's die, whose message embeds the interpreter's own script path and line number ("... at ../legacy_code/pal2nal.v14.pl line 365."). A port cannot and should not reproduce that; the file name alone is reported.
 err_bad_output_format	Exit-status fix: v14 printed the error and exited 0, so callers could not detect the failure. v15 exits 1.
 err_bad_codontable	Exit-status fix: as above, v14 exited 0 after reporting an invalid codon table.
-err_codon_with_nogap	Exit-status fix: as above, for the rejected "-output codon" combinations.
-err_codon_with_blockonly	Exit-status fix: as above.
-err_codon_with_nomismatch	Exit-status fix: as above.
+err_codon_with_nogap	Exit-status fix: as above, for the rejected "-output codon" combinations. Also the option-name fix (15): v14's message named "-outform codon", an option the tool has never had, so a user who followed it got "invalid output format" next.
+err_codon_with_blockonly	Exit-status fix: as above; and the same option-name fix (15), "-outform" to "-output".
+err_codon_with_nomismatch	Exit-status fix: as above; and the same option-name fix (15), "-outform" to "-output".
 fix_leading_blank_fasta	Format-detection fix (1): v14 read the file as one string, so a FASTA alignment starting with a blank line failed the "^>" test and was parsed as CLUSTAL, splitting on whitespace into nine bogus sequences. v15 detects from the first meaningful line and converts it correctly.
 fix_duplicate_fasta_ids	Duplicate-id fix (2): v14 appended the repeated header to the id list twice while merging both records under one key, emitting the merged sequence twice. v15 reports an error.
 fix_dot_gap	Dot-gap fix (11): v14 honoured "." as a gap when building the match but not when writing the alignment, so a "." column produced no gap while "-" did. v15 treats them alike, as the documented contract says.
 fix_selenocysteine	Selenocysteine fix (8): U is listed among the accepted residues but no table defines it, so v14 appended an empty pattern, desynchronised the match and aborted the run. v15 gives U the TGA codon.
 fix_short_peptide_fallback	Short-peptide fallback fix (7): with five residues v14 produced one anchor, lost it to an empty loop range and aborted. v15 converts and reports the mismatched codon.
 fix_codon_row_drift	Codon-row fix (9): v14 sized a widened frame-shift column from a leftover loop variable, so with the numeral in any but the last sequence the amino-acid row came out a column short and drifted against the codon row. v15 uses the column maximum.
+fix_nogap_stop_codon	-nogap stop-codon fix (13): v14 tested for an in-frame stop with the universal code's TAA/TAG/TGA written out literally, ignoring -codontable, so under table 2 the TGA column spelling Trp was deleted while the AGA and AGG stops -nogap exists to remove survived. v15 uses the selected table's own stop pattern.
+ciliate_nogap_t6	Same -nogap stop-codon fix (13) from the other side: under the ciliate code TAA and TAG spell Gln, and v14 deleted both columns as stops. v15 keeps them; table 6's only stop is TGA.
+fix_gblocks_format	Gblocks parser fix (14): v14 reset the "am I inside the alignment" flag at the top of every line of a Gblocks-format file, before the branch that consumes the data, so every sequence line was discarded and the run died with "number of input seqs differ (aa: 0; nuc: 2)". The format was unusable. v15 keeps the flag across lines and converts.
+fix_gblocks_blockonly	Same Gblocks parser fix (14): with the sequences parsed, the '#' mask on the Gblocks line also reaches -blockonly, which v14 could never exercise.
+err_ragged_alignment	Ragged-alignment fix (16): the rows are 7 and 6 columns. v14 took the alignment length from whichever row came first, so with the long row leading it walked off the end of the short one and printed a row a column short, exit 0. v15 refuses the file and names the rows and their lengths.
+err_ragged_short_first	Same ragged-alignment fix (16) with the rows swapped, which is the damaging order: v14 sized the alignment from the 6-column row and silently discarded the 7th column of the longer one -- a real codon, GTG, gone with no message and exit 0. The row order alone decided which of the two wrong answers v14 gave.
 fix_help_stops	-h fix (5): v14 printed usage and then converted anyway. v15 prints usage and stops.
 fix_dangling_output	Missing-value fix (6): a trailing -output was ignored and the default used. v15 reports an error.
 fix_dangling_codontable	Missing-value fix (6): a trailing -codontable was ignored and the previous value kept. v15 reports an error.

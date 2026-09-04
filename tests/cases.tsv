@@ -82,6 +82,13 @@ mito_under_t1	data/mito_pep.fasta data/mito.nuc
 mito_under_t2	data/mito_pep.fasta data/mito.nuc -codontable 2
 ciliate_under_t1	data/ciliate_pep.fasta data/ciliate.nuc
 ciliate_under_t6	data/ciliate_pep.fasta data/ciliate.nuc -codontable 6
+ciliate_nogap_t6	data/ciliate_pep.fasta data/ciliate.nuc -codontable 6 -nogap
+vertmito_stop_t2	data/vertmito_stop_pep.fasta data/vertmito_stop.nuc -codontable 2
+fix_nogap_stop_codon	data/vertmito_stop_pep.fasta data/vertmito_stop.nuc -codontable 2 -nogap
+fix_gblocks_format	data/gblocks.aln data/gblocks.nuc
+fix_gblocks_blockonly	data/gblocks.aln data/gblocks.nuc -blockonly
+err_ragged_alignment	data/ragged_pep.fasta data/ragged.nuc -output codon
+err_ragged_short_first	data/ragged_short_first_pep.fasta data/ragged_short_first.nuc -output codon
 usage_no_args	
 usage_one_arg	data/dhfr.aln
 help_flag	-h

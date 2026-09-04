@@ -7,7 +7,7 @@ broke the codon match -- the run then died with the generic "inconsistency
 between the following pep and nuc seqs", which dumps both sequences back
 at the caller. Under -html that dump is the web page.
 
-Three gates are applied before any of that:
+Four gates are applied before any of that:
 
 * non-ASCII input is refused, and the message never repeats the offending
   text -- only how much there is and where the first one is. Bytes that
@@ -19,7 +19,13 @@ Three gates are applied before any of that:
   or terminal-controlling reaches stdout or an HTML page;
 * DNA characters outside the IUPAC alphabet are refused by name. They are
   printable ASCII by the time this runs, so quoting them is safe, and
-  saying "'E' at nucleotide 42" beats the sequence dump it replaces.
+  saying "'E' at nucleotide 42" beats the sequence dump it replaces;
+* a peptide alignment whose rows are not all the same width is refused.
+  v14 took the alignment length from whichever row happened to be first,
+  so a ragged file was mangled one of two ways depending only on the order
+  the sequences appeared in: with a long row first the shorter ones gained
+  a gap column nobody wrote, and with a short row first the tail of every
+  longer row was dropped, silently, taking real codons with it.
 
 Peptide residues are deliberately *not* gated here: an unknown residue has
 a defined fallback (it is taken as X) and convert.py already reports each
@@ -30,7 +36,8 @@ has no fallback, so it is fatal.
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping
+from collections import Counter
+from collections.abc import Mapping, Sequence
 from typing import Final
 
 #: the same three line endings inputs.normalise_newlines collapses; kept
@@ -139,4 +146,47 @@ def check_nucleotide_alphabet(id2seq: Mapping[str, str]) -> None:
         f"       expected {', '.join(NUCLEOTIDES)} or an IUPAC ambiguity code "
         f"({' '.join(AMBIGUITY)})\n\n"
     )
+    raise InputError("".join(lines))
+
+
+def check_alignment_widths(ids: Sequence[str], sequences: Sequence[str]) -> None:
+    """Refuse a peptide alignment whose rows are not all the same width.
+
+    An alignment is a rectangle by definition, and every stage downstream
+    assumes it: `output.py` reads the column count off the first row alone,
+    so on a ragged file the row order alone decides whether a column is
+    invented or a real one is thrown away. Neither is worth guessing at, and
+    the frame-shift substitutions in `apply_frameshift_markers` preserve
+    length, so this can be checked on the alignment as parsed.
+
+    Where a majority of rows agree on a width, that one is named as the
+    intended one and only the odd rows out are listed; where there is no
+    majority to point at, every row is listed and none is called correct.
+    """
+    if len(sequences) < 2:
+        return
+    widths = [len(s) for s in sequences]
+    if len(set(widths)) == 1:
+        return
+
+    (expected, agreeing) = Counter(widths).most_common(1)[0]
+    if agreeing > 1:
+        # a clear majority: name only the rows that disagree with it
+        header = (
+            "\nERROR: the alignment rows are not all the same length; "
+            f"most have {expected} columns:\n"
+        )
+        listed = [(i, w) for i, w in zip(ids, widths) if w != expected]
+    else:
+        # no majority to point at -- two rows of different lengths, say --
+        # so claiming one is the intended width would be a guess
+        header = "\nERROR: the alignment rows are not all the same length:\n"
+        listed = list(zip(ids, widths))
+
+    lines = [header]
+    for seq_id, width in listed[:_MAX_REPORTED]:
+        lines.append(f"       {seq_id}: {width}\n")
+    if len(listed) > _MAX_REPORTED:
+        lines.append(f"       ... and {len(listed) - _MAX_REPORTED} more sequence(s)\n")
+    lines.append("       every row of an alignment must have the same number of columns\n\n")
     raise InputError("".join(lines))

@@ -128,6 +128,33 @@ has no such fallback and is fatal.
   choice between ID-based and positional pairing compared list lengths, not
   the ID sets, so duplicates could satisfy it and a protein would be paired
   with a missing DNA sequence. A genuine one-to-one match is now required.
+* **`-nogap` filtered stop codons with the universal code whatever
+  `-codontable` said.** The three stops TAA, TAG and TGA were written into
+  the filter literally, so on every other genetic code it was wrong in both
+  directions at once: under the ciliate code (6) it deleted the TAA and TAG
+  columns that spell Gln, and under the vertebrate mitochondrial code (2) it
+  deleted the TGA column that spells Trp while keeping the AGA and AGG stops
+  the option exists to remove. Since `-nogap` is normally what prepares an
+  alignment for a dS/dN estimate, that let a real in-frame stop through and
+  discarded good codons. The selected table's own stop codons are now used.
+* **An error message named an option that does not exist.** Rejecting
+  `-output codon` alongside `-blockonly`, `-nogap` or `-nomismatch`, v14
+  reported `"-outform codon" is not valid with ...`. There has never been an
+  `-outform` option, so a user who followed the message got "invalid output
+  format" from the next run. The message now names `-output`.
+* **A ragged alignment was accepted and quietly mangled.** The alignment
+  length came from whichever row was first, so the row order alone decided
+  what happened to a file whose rows differed in width: a long row first
+  left the shorter ones a column short, and a short row first silently
+  discarded the tail of every longer row, real codons included. Both exited
+  0 with nothing on stderr. An alignment whose rows are not all the same
+  length is now refused, with the offending rows and their lengths named.
+* **Gblocks-format alignments were silently discarded.** The flag tracking
+  whether the parser was inside the alignment was reset at the top of every
+  line, before the branch that consumes the data, so no sequence line was
+  ever read and the run failed with "number of input seqs differ (aa: 0;
+  nuc: 2)". The format was unusable in v14; it now parses, and its `#` mask
+  reaches `-blockonly`.
 
 ### Changed: command-line behaviour
 

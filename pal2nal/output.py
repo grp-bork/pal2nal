@@ -12,15 +12,15 @@ sequence and the rows stay in register.
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from itertools import islice, zip_longest
 from typing import Final, TextIO
 
+from .codonmatch import codon_matches
+from .codontables import P2C
+
 _DIGIT: Final = frozenset("0123456789")
 _GAP: Final = frozenset("-.")
-#: in-frame stop codons removed by -nogap (pal2nal.pl:857)
-_STOP: Final = re.compile(r"(((U|T)A(A|G|R))|((T|U)GA))", re.IGNORECASE)
 _BLOCK_WIDTH: Final = 60
 _CODON_PEP_WIDTH: Final = 20
 _MIN_ID_WIDTH: Final = 10
@@ -108,16 +108,25 @@ def build(
     return aln
 
 
-def remove_gaps(aln: Alignment) -> Alignment:
+def remove_gaps(aln: Alignment, codontable: int = 1) -> Alignment:
     """pal2nal.pl:845-873 -- drop any codon column that is gapped in any
-    sequence or that holds an in-frame stop."""
+    sequence or that holds an in-frame stop.
+
+    v14 tested for a stop with the universal code's TAA/TAG/TGA written out
+    literally, whatever -codontable had selected, so the filter was wrong in
+    both directions on every other code: under table 6 it deleted the TAA and
+    TAG columns that spell Gln, and under table 2 it kept the AGA and AGG
+    stops it exists to remove. The selected table's own stop pattern is used
+    here instead.
+    """
+    stop = P2C[codontable]["*"]
     keep: list[int] = []
     length = len(aln.codonaln[0]) if aln.codonaln else 0
     for pos in range(0, length - 2, 3):
         ok = True
         for seq in aln.codonaln:
             codon = seq[pos : pos + 3]
-            if "-" in codon or _STOP.fullmatch(codon):
+            if "-" in codon or codon_matches(stop, codon):
                 ok = False
                 break
         if ok:

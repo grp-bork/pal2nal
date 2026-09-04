@@ -139,7 +139,7 @@ def run(opt: Options, out: TextIO, err: TextIO) -> int:
         blockonly=opt.blockonly, nomismatch=opt.nomismatch,
     )
     if opt.nogap:
-        built = output.remove_gaps(built)
+        built = output.remove_gaps(built, opt.codontable)
     built.ids = [_esc(i, opt.html) for i in built.ids]
 
     output.write_alignment(

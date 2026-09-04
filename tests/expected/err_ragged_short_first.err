@@ -1,0 +1,6 @@
+
+ERROR: the alignment rows are not all the same length:
+       ref: 6
+       query: 7
+       every row of an alignment must have the same number of columns
+
