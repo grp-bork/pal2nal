@@ -41,6 +41,7 @@ class Options:
     html: bool = False
     nostderr: bool = False
     codontable: int = 1
+    partial: bool = False
 
 
 def perl_num(text: str) -> float:
@@ -106,6 +107,8 @@ def parse_args(argv: list[str], *, stderr: TextIO | None = None) -> Options:
             opt.html = True
         elif arg == "-nostderr":
             opt.nostderr = True
+        elif arg == "-partial":
+            opt.partial = True
         elif not opt.alnfile:
             # truthiness, as in the Perl: a file literally named "0" is
             # falsy and would be overwritten by the next positional

@@ -11,7 +11,7 @@ import sys
 from typing import Final, TextIO
 
 from . import __version__, inputs, output
-from .convert import NO_MATCH, pn2codon
+from .convert import MISMATCH, NO_MATCH, PARTIAL, CodonResult, pn2codon
 from .options import Exit, Options, check_combinations, parse_args
 from .validate import InputError
 
@@ -83,16 +83,29 @@ def run(opt: Options, out: TextIO, err: TextIO) -> int:
     codonseqs: list[str] = []
     messages: list[str] = []
     unknown: list[str] = []
+    coverage: list[str] = []
     mismatches: set[tuple[str, int]] = set()
 
     for i, aa_id in enumerate(aln.ids):
         nuc_id = aa_id if correspondence == "sameID" else nuc.ids[i]
-        res = pn2codon(aaseqs[i], nuc.id2seq.get(nuc_id, ""), opt.codontable)
+        res = pn2codon(
+            aaseqs[i], nuc.id2seq.get(nuc_id, ""), opt.codontable, partial=opt.partial
+        )
+        # under -partial pn2codon never returns NO_MATCH, so this is the
+        # one place the flag changes: the run continues, gaps and all
         if res.result == NO_MATCH:
             _fail(
                 opt, out, err,
                 _inconsistency(opt, aa_id, nuc_id, aaseqs[i], nuc.id2seq.get(nuc_id, "")),
             )
+        if opt.partial:
+            line = _coverage(aa_id, aaseqs[i], res)
+            if line:
+                coverage.append(line)
+            # a residue with no codon at all is at least as untrustworthy
+            # as one whose codon disagrees, so -nomismatch drops its column
+            # too; -nogap would have dropped it anyway, being a gap
+            mismatches.update((aa_id, col) for col in res.unplaced)
         codonseqs.append(res.codonseq)
         for message in res.unknown:
             unknown.append(f"WARNING: {aa_id} {message}")
@@ -117,9 +130,10 @@ def run(opt: Options, out: TextIO, err: TextIO) -> int:
         messages = kept
 
     # v15: -nomismatch and -blockonly select which *codons* are reported,
-    # so neither may hide a character that is not a residue at all. Only
-    # -nostderr, which asks for silence outright, still suppresses those.
-    reported = list(unknown)
+    # so neither may hide a character that is not a residue at all, nor how
+    # much of a sequence was matched. Only -nostderr, which asks for silence
+    # outright, still suppresses those.
+    reported = coverage + list(unknown)
     if not opt.nomismatch:
         if opt.codontable != 1:
             reported.insert(0, f"Codontable {opt.codontable} is used")
@@ -152,6 +166,37 @@ def run(opt: Options, out: TextIO, err: TextIO) -> int:
     return 0
 
 
+def _coverage(aa_id: str, pep: str, res: CodonResult) -> str:
+    """One line saying how much of `aa_id` actually came from its DNA.
+
+    Only under -partial, and only when there is something to say: a clean
+    conversion stays silent, so the flag adds no output to any input that
+    already worked.
+
+    A whole-sequence count rather than one warning per residue -- a hole can
+    span hundreds of columns, and v14's per-codon reporting already shows
+    what that looks like when an unrelated DNA sequence produces a warning
+    for all sixty residues.
+    """
+    residues = sum(1 for aa in pep if aa not in "-." and not aa.isdigit())
+    if res.result == PARTIAL:
+        placed = residues - len(res.unplaced)
+        if not placed:
+            return f"UNMATCHED: {aa_id} 0/{residues} residues placed"
+        if placed < residues:
+            return f"PARTIAL: {aa_id} {placed}/{residues} residues placed"
+        # fully recovered, but not from one stretch of DNA: say so, or the
+        # intron the placement stepped over would go unmentioned
+        return (
+            f"PARTIAL: {aa_id} {placed}/{residues} residues placed "
+            f"in {res.segments} segments"
+        )
+    if res.result == MISMATCH and res.messages:
+        verified = residues - len(res.messages)
+        return f"MISMATCH: {aa_id} {verified}/{residues} codons verified"
+    return ""
+
+
 def _inconsistency(opt: Options, aa_id: str, nuc_id: str, pep: str, dna: str) -> str:
     """pal2nal.pl:538-660, without the bl2seq diagnostic (dropped: the tool
     is retired and the message it produced was only advisory).
@@ -165,6 +210,11 @@ def _inconsistency(opt: Options, aa_id: str, nuc_id: str, pep: str, dna: str) ->
     parts += [_esc(line, opt.html) + "\n" for line in output.chunk(pep.replace("-", ""), 60)]
     parts.append(f">{_esc(nuc_id, opt.html)}\n")
     parts += [_esc(line, opt.html) + "\n" for line in output.chunk(dna, 60)]
+    # v14 closed with "Run bl2seq (-p tblastn) or GeneWise to see the
+    # inconsistency"; both were external and the advice went with them when
+    # bl2seq was dropped. This is the same advice, for a tool that is here
+    parts.append("#  Re-run with -partial to convert the codons that can be\n")
+    parts.append("#  matched and gap the rest.\n")
     parts.append(RULE + "\n\n")
     return "".join(parts)
 

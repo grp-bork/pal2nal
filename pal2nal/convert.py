@@ -55,6 +55,9 @@ _SELENOCYSTEINE: Final = "((U|T)GA)"
 OK: Final = 1
 MISMATCH: Final = 2
 NO_MATCH: Final = -1
+#: v16, -partial only: some of the peptide was placed against the DNA and
+#: the rest was gapped. Never returned unless the caller asks for it.
+PARTIAL: Final = 3
 
 
 @dataclass
@@ -67,6 +70,14 @@ class CodonResult:
     #: apart from the mismatches because they are an input problem, and
     #: v15 reports them whatever the output filters say
     unknown: list[str] = field(default_factory=list)
+    #: alignment columns -partial could not place, and so gapped. Columns
+    #: rather than prose: a hole can span hundreds of residues, and one
+    #: warning each would drown the report the way v14's per-codon
+    #: mismatches do. cli.py renders them as a count and a range
+    unplaced: list[int] = field(default_factory=list)
+    #: runs of contiguous DNA the placement used. More than one means the
+    #: DNA carried something the peptide does not -- an intron, typically
+    segments: int = 0
 
 
 @cache
@@ -76,12 +87,32 @@ def _patterns(codontable: int) -> dict[str, str]:
     return table
 
 
-def _build_steps(pep: str, p2c: dict[str, str]) -> tuple[list[Step], list[str]]:
+def _has_letter(pep: str) -> bool:
+    """Whether `pep` holds anything `_build_steps` would count as a letter.
+
+    Frame-shift numerals and gaps do not count; an unknown character does,
+    because it is taken as X. This is what lets `_chain` tell each anchor
+    whether the initiating Met has already gone by.
+    """
+    return any(aa not in _GAP and aa not in _DIGIT for aa in pep)
+
+
+def _build_steps(
+    pep: str, p2c: dict[str, str], *, seen_letter: bool = False
+) -> tuple[list[Step], list[str]]:
     """pal2nal.pl:1757-1783. Returns the steps and, separately, a report
-    for every aligned character that is not a residue."""
+    for every aligned character that is not a residue.
+
+    `seen_letter` says whether a residue has already been seen *earlier in
+    the peptide* than the slice passed in. It matters only for the
+    initiating Met: `_chain` builds one anchor at a time, and without this
+    every anchor beginning with M would be matched against the table's
+    initiation codons instead of the Met codon. Under table 1 that would
+    silently accept CTG and TTG as Met; under table 11, ATT, ATC, ATA and
+    GTG as well.
+    """
     steps: list[Step] = []
     messages: list[str] = []
-    seen_letter = False
     for i, aa in enumerate(pep):
         pos = i + 1
         if aa in _AA_CHARS:
@@ -135,7 +166,130 @@ def _anchors(pep: str) -> list[str]:
     return pre
 
 
-def pn2codon(pep: str, nuc: str, codontable: int) -> CodonResult:
+def _chain(
+    pep: str, nuc: str, offsets: Offsets, p2c: dict[str, str]
+) -> tuple[str, list[int], int]:
+    """Place each anchor on its own, left to right, and gap the rest.
+
+    v14's fallback concatenates every anchor into one *fixed-width* pattern,
+    so a single length discrepancy anywhere -- an intron, an indel, a CDS
+    truncated at either end -- makes the whole search fail and the run
+    abort. Placing the anchors independently, each at the leftmost offset
+    that does not overlap the one before it, lets the DNA between two
+    anchors be any length at all, which is precisely what those four
+    pathologies need.
+
+    Returns the codon string and the peptide indices it could not place.
+    The codon string always spends exactly the width each aligned column
+    expects -- three nucleotides per residue, `int(aa)` for a frame-shift
+    numeral -- so `output.build` reinserts the alignment's gaps around it
+    unchanged. That width is `_width(steps)`, never `3 * residues`: for
+    "EK4QKNDTY" the true width is 28 and `3 * 9` is 27, and a nucleotide
+    lost here would shift every codon downstream of it.
+    """
+    anchors = _anchors(pep)
+    # (peptide offset, steps, width) per anchor, in peptide order
+    plan: list[tuple[int, list[Step], int]] = []
+    pep_at = 0
+    seen_letter = False
+    for anchor in anchors:
+        steps, _ = _build_steps(anchor, p2c, seen_letter=seen_letter)
+        plan.append((pep_at, steps, _width(steps)))
+        pep_at += len(anchor)
+        seen_letter = seen_letter or _has_letter(anchor)
+
+    # pass 1: greedy left to right. On contiguous DNA the leftmost offset
+    # at or after `pos` is `pos` itself, so a clean pair chains to exactly
+    # the answer the unanchored search would have given.
+    placed: list[int | None] = [None] * len(plan)
+    pos = 0
+    for i, (_, steps, width) in enumerate(plan):
+        if not steps:
+            continue
+        start = offsets.search(steps, pos)
+        if start is not None:
+            placed[i] = start
+            pos = start + width
+
+    # pass 2: fill the runs pass 1 left behind. An anchor fails to place
+    # for two very different reasons -- the DNA genuinely does not encode
+    # it, or it does but with a substitution the pattern will not accept --
+    # and the span its neighbours leave tells them apart.
+    _fill_runs(plan, placed)
+
+    pieces: list[str] = []
+    gapped: list[int] = []
+    segments = 0
+    previous_end: int | None = None
+    for i, (pep_at, steps, width) in enumerate(plan):
+        at = placed[i]
+        if at is None:
+            pieces.append("-" * width)
+            gapped.extend(
+                pep_at + k
+                for k, aa in enumerate(anchors[i])
+                if aa not in _GAP and aa not in _DIGIT
+            )
+            previous_end = None
+        else:
+            pieces.append(nuc[at : at + width])
+            if at != previous_end:
+                segments += 1
+            previous_end = at + width
+    return "".join(pieces), gapped, segments
+
+
+def _fill_runs(
+    plan: list[tuple[int, list[Step], int]], placed: list[int | None]
+) -> None:
+    """Recover unplaced anchors whose position is pinned anyway.
+
+    A run of unplaced anchors *between* two placed ones has its position
+    determined from both sides: if the DNA they leave is exactly as wide as
+    the run needs, those are its codons, whatever they encode. Filling
+    there is what keeps -partial from being worse than the fallback it
+    supplements -- an anchor holding one point substitution will not place,
+    and without this it would be gapped rather than reported as a mismatch.
+
+    Only interior runs. A run at either end is pinned on one side only, so
+    the span proves nothing and a fill there would read 5' UTR as coding
+    sequence -- which is exactly where the two truncation pathologies would
+    trigger it. Verifying such a fill instead of trusting the span would
+    not help: pass 1 searches from the same offset with the same patterns,
+    so anything that verified there would already have been placed.
+    """
+    i = 0
+    while i < len(plan):
+        if placed[i] is not None:
+            i += 1
+            continue
+        j = i
+        while j < len(plan) and placed[j] is None:
+            j += 1
+        if i == 0 or j == len(plan):
+            i = j                       # an end run: nothing pins it
+            continue
+        prev = placed[i - 1]
+        assert prev is not None
+        start = prev + plan[i - 1][2]
+        need = sum(plan[k][2] for k in range(i, j))
+        if placed[j] == start + need:   # an indel would not fit
+            for k in range(i, j):
+                placed[k] = start
+                start += plan[k][2]
+        i = j
+
+
+def pn2codon(
+    pep: str, nuc: str, codontable: int, *, partial: bool = False
+) -> CodonResult:
+    """Match `pep` against `nuc` and return its codons.
+
+    `partial` is v16's -partial: where v14 would give up entirely, place
+    each anchor on its own instead and gap what will not place. It is
+    consulted only after both of v14's paths have failed, so every input
+    that converts today converts to the same bytes either way.
+    """
     p2c = _patterns(codontable)
     steps, unknown = _build_steps(pep, p2c)
     # one pass over the DNA, shared by the exact match and every anchor
@@ -175,18 +329,28 @@ def pn2codon(pep: str, nuc: str, codontable: int) -> CodonResult:
         found = bool(specific) and offsets.search(specific) is not None
         whole.extend(specific if found else relaxed)
 
-    if not whole:
-        return CodonResult(NO_MATCH, unknown=unknown)
-    start = offsets.search(whole)
+    start = offsets.search(whole) if whole else None
     if start is None:
-        return CodonResult(NO_MATCH, unknown=unknown)
+        if not partial:
+            return CodonResult(NO_MATCH, unknown=unknown)
+        codon, gapped, segments = _chain(pep, nuc, offsets, p2c)
+        messages = _check_codons(pep, codon, p2c, frozenset(gapped))
+        return CodonResult(PARTIAL, codon, messages, unknown, gapped, segments)
 
     codon = nuc[start : start + _width(whole)]
     return CodonResult(MISMATCH, codon, _check_codons(pep, codon, p2c), unknown)
 
 
-def _check_codons(pep: str, codon: str, p2c: dict[str, str]) -> list[str]:
-    """pal2nal.pl:1878-1899 -- walk the match and verify each codon."""
+def _check_codons(
+    pep: str, codon: str, p2c: dict[str, str], skip: frozenset[int] = frozenset()
+) -> list[str]:
+    """pal2nal.pl:1878-1899 -- walk the match and verify each codon.
+
+    `skip` holds the columns -partial gapped, so a residue that has no
+    codon at all is never reported as one whose codon is wrong. The cursor
+    still advances across them: that arithmetic is the register the whole
+    output depends on.
+    """
     messages: list[str] = []
     pos_in_codon = 0
     residue_count = 0
@@ -200,6 +364,8 @@ def _check_codons(pep: str, codon: str, p2c: dict[str, str]) -> list[str]:
         residue_count += 1
         tmpcodon = codon[pos_in_codon : pos_in_codon + 3]
         pos_in_codon += 3
+        if i in skip:
+            continue
         expected = p2c["B"] if residue_count == 1 and aa == "M" else p2c.get(aa)
         if expected is None or not codon_matches(expected, tmpcodon):
             messages.append(f"pepAlnPos {pos}: {aa} does not correspond to {tmpcodon}")

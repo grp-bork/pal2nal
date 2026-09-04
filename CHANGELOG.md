@@ -1,5 +1,91 @@
 # Changelog
 
+## v16.0 (4 September 2026)
+
+### Added
+
+* **`-partial`: convert a peptide and CDS that do not fully correspond.**
+  Where v14 and v15.0 abort the whole run with "inconsistency between the
+  following pep and nuc seqs" -- discarding every other sequence in the
+  alignment along with the offending one -- `-partial` places each ten-residue
+  anchor against the DNA independently, keeps the codons it can, gaps the
+  residues it cannot, and carries on. Four common shapes of real Ensembl and
+  NCBI data reach that error and now convert: an intron in the DNA, an indel
+  of any size between the peptide and its CDS, and a CDS truncated at either
+  end. An intron is recovered exactly -- the codons either side of it are the
+  true CDS, byte for byte.
+
+  The flag is opt-in and engages only after both of v14's matching paths have
+  failed, so it changes nothing about any input that converts today. Its
+  report names each affected sequence and how much of it was placed:
+
+  ```
+  #  PARTIAL: ENSG001 60/60 residues placed in 2 segments
+  #  PARTIAL: ENSG002 40/60 residues placed
+  #  UNMATCHED: ENSG003 0/60 residues placed
+  ```
+
+  Exit status stays 0 -- not aborting is the point of the flag -- and the
+  report is how a caller learns what happened. `-nostderr` silences it;
+  `-nomismatch` and `-blockonly` do not, since those select which codons are
+  shown and cannot be allowed to hide how much of a sequence was matched.
+  A residue with no codon is treated as a mismatched column, so `-nomismatch`
+  drops it and `-html` marks it; `-nogap` removes it as the gap it is.
+
+  Credit for the idea goes to
+  [`dukecomeback/pal4nal.pl`](https://github.com/dukecomeback/pal4nal.pl),
+  a fork that exists because of this one limitation and that solves it by
+  calling out to genewise. `-partial` needs no external program, is
+  deliberately not a splice-aware aligner, and reports what it could not
+  place rather than guessing. Anchors are chained greedily left to right, so
+  a tandem repeat can attract an anchor to the wrong copy; the residue counts
+  in the report are what shows it. Validation is unaffected -- "does not
+  abort" applies to the peptide/CDS correspondence only, and a ragged
+  alignment, a duplicate ID or a bad alphabet is still refused.
+
+* **The inconsistency error now says what to do about it.** v14 closed that
+  report by advising "Run bl2seq (-p tblastn) or GeneWise to see the
+  inconsistency"; both were external programs and the advice was dropped in
+  v15.0 along with bl2seq. It now points at `-partial`, which does the same
+  job in-process.
+
+### Fixed
+
+Four defects, all of them reported by
+[`mmokrejs/PAL2NAL_standalone`](https://github.com/mmokrejs/PAL2NAL_standalone),
+which documents ten bugs in v14.1 and fixes them in Perl -- finding them is
+its work, not ours. Its baseline is byte-identical to
+`tests/reference/pal2nal.v14.pl` apart from the licence header, so each was
+a question about this port; four needed work here.
+
+* **`-nogap` filtered stop codons with the universal code whatever
+  `-codontable` said.** The three stops TAA, TAG and TGA were written into
+  the filter literally, so on every other genetic code it was wrong in both
+  directions at once: under the ciliate code (6) it deleted the TAA and TAG
+  columns that spell Gln, and under the vertebrate mitochondrial code (2) it
+  deleted the TGA column that spells Trp while keeping the AGA and AGG stops
+  the option exists to remove. Since `-nogap` is normally what prepares an
+  alignment for a dS/dN estimate, that let a real in-frame stop through and
+  discarded good codons. The selected table's own stop codons are now used.
+* **An error message named an option that does not exist.** Rejecting
+  `-output codon` alongside `-blockonly`, `-nogap` or `-nomismatch`, v14
+  reported `"-outform codon" is not valid with ...`. There has never been an
+  `-outform` option, so a user who followed the message got "invalid output
+  format" from the next run. The message now names `-output`.
+* **A ragged alignment was accepted and quietly mangled.** The alignment
+  length came from whichever row was first, so the row order alone decided
+  what happened to a file whose rows differed in width: a long row first
+  left the shorter ones a column short, and a short row first silently
+  discarded the tail of every longer row, real codons included. Both exited
+  0 with nothing on stderr. An alignment whose rows are not all the same
+  length is now refused, with the offending rows and their lengths named.
+* **Gblocks-format alignments were silently discarded.** The flag tracking
+  whether the parser was inside the alignment was reset at the top of every
+  line, before the branch that consumes the data, so no sequence line was
+  ever read and the run failed with "number of input seqs differ (aa: 0;
+  nuc: 2)". The format was unusable in v14; it now parses, and its `#` mask
+  reaches `-blockonly`.
+
 ## v15.0 (3 September 2026)
 
 First release since v14 (2 December 2011), and the first in Python. The
@@ -128,34 +214,6 @@ has no such fallback and is fatal.
   choice between ID-based and positional pairing compared list lengths, not
   the ID sets, so duplicates could satisfy it and a protein would be paired
   with a missing DNA sequence. A genuine one-to-one match is now required.
-* **`-nogap` filtered stop codons with the universal code whatever
-  `-codontable` said.** The three stops TAA, TAG and TGA were written into
-  the filter literally, so on every other genetic code it was wrong in both
-  directions at once: under the ciliate code (6) it deleted the TAA and TAG
-  columns that spell Gln, and under the vertebrate mitochondrial code (2) it
-  deleted the TGA column that spells Trp while keeping the AGA and AGG stops
-  the option exists to remove. Since `-nogap` is normally what prepares an
-  alignment for a dS/dN estimate, that let a real in-frame stop through and
-  discarded good codons. The selected table's own stop codons are now used.
-* **An error message named an option that does not exist.** Rejecting
-  `-output codon` alongside `-blockonly`, `-nogap` or `-nomismatch`, v14
-  reported `"-outform codon" is not valid with ...`. There has never been an
-  `-outform` option, so a user who followed the message got "invalid output
-  format" from the next run. The message now names `-output`.
-* **A ragged alignment was accepted and quietly mangled.** The alignment
-  length came from whichever row was first, so the row order alone decided
-  what happened to a file whose rows differed in width: a long row first
-  left the shorter ones a column short, and a short row first silently
-  discarded the tail of every longer row, real codons included. Both exited
-  0 with nothing on stderr. An alignment whose rows are not all the same
-  length is now refused, with the offending rows and their lengths named.
-* **Gblocks-format alignments were silently discarded.** The flag tracking
-  whether the parser was inside the alignment was reset at the top of every
-  line, before the branch that consumes the data, so no sequence line was
-  ever read and the run failed with "number of input seqs differ (aa: 0;
-  nuc: 2)". The format was unusable in v14; it now parses, and its `#` mask
-  reaches `-blockonly`.
-
 ### Changed: command-line behaviour
 
 * **Errors exit with status 1.** Every validation failure previously exited

@@ -1,0 +1,64 @@
+#------------------------------------------------------------------------#
+#  Input files:  data/unrelated_pep.fasta data/unrelated.nuc
+#  MISMATCH: seq1 1/60 codons verified
+#  WARNING: seq1 pepAlnPos 1: M does not correspond to GTT
+#  WARNING: seq1 pepAlnPos 2: M does not correspond to GGC
+#  WARNING: seq1 pepAlnPos 3: F does not correspond to CCA
+#  WARNING: seq1 pepAlnPos 4: P does not correspond to GTG
+#  WARNING: seq1 pepAlnPos 5: C does not correspond to TGA
+#  WARNING: seq1 pepAlnPos 6: D does not correspond to ATC
+#  WARNING: seq1 pepAlnPos 7: V does not correspond to GCT
+#  WARNING: seq1 pepAlnPos 8: E does not correspond to TAA
+#  WARNING: seq1 pepAlnPos 9: N does not correspond to GGG
+#  WARNING: seq1 pepAlnPos 10: W does not correspond to TTA
+#  WARNING: seq1 pepAlnPos 11: C does not correspond to AGT
+#  WARNING: seq1 pepAlnPos 12: T does not correspond to AAG
+#  WARNING: seq1 pepAlnPos 13: H does not correspond to TGT
+#  WARNING: seq1 pepAlnPos 14: C does not correspond to GAT
+#  WARNING: seq1 pepAlnPos 15: D does not correspond to GCA
+#  WARNING: seq1 pepAlnPos 16: Q does not correspond to TAC
+#  WARNING: seq1 pepAlnPos 17: Q does not correspond to GCC
+#  WARNING: seq1 pepAlnPos 18: D does not correspond to TTT
+#  WARNING: seq1 pepAlnPos 19: I does not correspond to ACT
+#  WARNING: seq1 pepAlnPos 20: D does not correspond to TGC
+#  WARNING: seq1 pepAlnPos 21: V does not correspond to TGT
+#  WARNING: seq1 pepAlnPos 22: Q does not correspond to GTC
+#  WARNING: seq1 pepAlnPos 23: C does not correspond to CAC
+#  WARNING: seq1 pepAlnPos 24: W does not correspond to CCC
+#  WARNING: seq1 pepAlnPos 25: E does not correspond to ATC
+#  WARNING: seq1 pepAlnPos 26: I does not correspond to GGA
+#  WARNING: seq1 pepAlnPos 27: W does not correspond to CTG
+#  WARNING: seq1 pepAlnPos 28: C does not correspond to GCA
+#  WARNING: seq1 pepAlnPos 29: W does not correspond to TTT
+#  WARNING: seq1 pepAlnPos 30: W does not correspond to TTA
+#  WARNING: seq1 pepAlnPos 31: P does not correspond to TTA
+#  WARNING: seq1 pepAlnPos 32: C does not correspond to CAC
+#  WARNING: seq1 pepAlnPos 33: I does not correspond to TCA
+#  WARNING: seq1 pepAlnPos 34: C does not correspond to GAA
+#  WARNING: seq1 pepAlnPos 35: V does not correspond to ACA
+#  WARNING: seq1 pepAlnPos 36: F does not correspond to GAA
+#  WARNING: seq1 pepAlnPos 38: Q does not correspond to GGG
+#  WARNING: seq1 pepAlnPos 39: F does not correspond to TAA
+#  WARNING: seq1 pepAlnPos 40: V does not correspond to TTT
+#  WARNING: seq1 pepAlnPos 41: E does not correspond to TGA
+#  WARNING: seq1 pepAlnPos 42: W does not correspond to CAG
+#  WARNING: seq1 pepAlnPos 43: L does not correspond to GTC
+#  WARNING: seq1 pepAlnPos 44: V does not correspond to ACG
+#  WARNING: seq1 pepAlnPos 45: G does not correspond to CAG
+#  WARNING: seq1 pepAlnPos 46: E does not correspond to AGG
+#  WARNING: seq1 pepAlnPos 47: W does not correspond to CGC
+#  WARNING: seq1 pepAlnPos 48: W does not correspond to GCC
+#  WARNING: seq1 pepAlnPos 49: H does not correspond to CTC
+#  WARNING: seq1 pepAlnPos 50: N does not correspond to CTG
+#  WARNING: seq1 pepAlnPos 51: E does not correspond to AAG
+#  WARNING: seq1 pepAlnPos 52: V does not correspond to TGC
+#  WARNING: seq1 pepAlnPos 53: D does not correspond to GTG
+#  WARNING: seq1 pepAlnPos 54: W does not correspond to GAC
+#  WARNING: seq1 pepAlnPos 55: C does not correspond to ACT
+#  WARNING: seq1 pepAlnPos 56: Y does not correspond to CGC
+#  WARNING: seq1 pepAlnPos 57: H does not correspond to TAT
+#  WARNING: seq1 pepAlnPos 58: S does not correspond to GAA
+#  WARNING: seq1 pepAlnPos 59: V does not correspond to TCT
+#  WARNING: seq1 pepAlnPos 60: Q does not correspond to CTG
+#------------------------------------------------------------------------#
+

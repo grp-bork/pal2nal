@@ -3,5 +3,7 @@
 
 >empty
 ATGGCTAAACAGCTTCGTACT
+#  Re-run with -partial to convert the codons that can be
+#  matched and gap the rest.
 #------------------------------------------------------------------------#
 

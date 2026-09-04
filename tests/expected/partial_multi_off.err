@@ -1,0 +1,10 @@
+#---  ERROR: inconsistency between the following pep and nuc seqs  ---#
+>bad
+MGFSYEVCMTTVSEVCIHKCETRVADRMYTYTHKRTVSTITKVHRFQEPRMDIQDHLEFN
+>bad
+ACTGCCTCAGGTGCGACAGGTACTGACGTGAATTAGATCCTTGAGCATGGGTAGCCTTGC
+GCTAACGTTACCCCCTTAGTGCGTATCAATCACCATGACG
+#  Re-run with -partial to convert the codons that can be
+#  matched and gap the rest.
+#------------------------------------------------------------------------#
+

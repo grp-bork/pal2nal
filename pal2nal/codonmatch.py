@@ -211,27 +211,39 @@ class Offsets:
         frame-shift numeral consumes."""
         return self._any >> (width - 1) if width else self._any
 
-    def search(self, steps: list[tuple[int, str | None]]) -> int | None:
-        """The leftmost offset at which every step matches in turn, or None.
+    def matches(self, steps: list[tuple[int, str | None]], start: int = 0) -> int:
+        """Every offset at or after `start` where all the steps match.
 
         `steps` pairs a width with a fragment, or with None for a
         frame-shift numeral, which constrains nothing but still advances
         the offset. An empty `steps` is the caller's business, not this
-        method's: it reports offset 0, matching nothing.
+        method's: every offset survives, matching nothing.
+
+        The whole set is the natural answer here -- the loop computes it
+        and `search` only ever wanted its lowest bit. Colinear chaining
+        (`convert._chain`) needs the rest of it, to place an anchor at the
+        leftmost offset that does not overlap the anchor before it.
         """
-        surviving = self._any
+        surviving = self._any & ~((1 << start) - 1) if start else self._any
         offset = 0
         cache = self._cache          # one residue per step: keep it local
         for width, pattern in steps:
+            if not surviving:
+                return 0
             if pattern is None:
                 positions = self.wildcard(width)
             else:
                 cached = cache.get(pattern)
                 positions = self.fragment(pattern) if cached is None else cached
             surviving &= positions >> offset
-            if not surviving:
-                return None
             offset += width
+        return surviving
+
+    def search(self, steps: list[tuple[int, str | None]], start: int = 0) -> int | None:
+        """The leftmost offset at which every step matches in turn, or None."""
+        surviving = self.matches(steps, start)
+        if not surviving:
+            return None
         # the lowest set bit is the leftmost surviving offset
         return (surviving & -surviving).bit_length() - 1
 

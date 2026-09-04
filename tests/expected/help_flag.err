@@ -23,6 +23,10 @@ Usage:  pal2nal.pl  pep.aln  nuc.fasta  [nuc.fasta...]  [options]
               -nomismatch   remove mismatched codons (mismatch between
                             pep and cDNA) from the output
 
+              -partial      when a peptide and its DNA do not correspond,
+                            convert the codons that can be matched, gap the
+                            rest, and carry on instead of stopping the run
+
               -codontable  N
                     1  Universal code (default)
                     2  Vertebrate mitochondrial code

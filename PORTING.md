@@ -12,14 +12,18 @@ them. `CHANGELOG.md` lists the resulting user-visible changes;
 
 ## How the port was verified
 
-* `tests/golden/` holds the Perl's own output for all 127 cases in
-  `tests/cases.tsv`, captured by `tests/generate_golden.sh`. Those files
-  are evidence and are never edited to make a test pass.
+* `tests/golden/` holds the Perl's own output for every case in
+  `tests/cases.tsv` (`wc -l < tests/cases.tsv`), captured by
+  `tests/generate_golden.sh`. Those files are evidence and are never edited
+  to make a test pass.
 * Where the port deliberately differs, the case is listed in
   `tests/divergences.tsv` with a reason and the intended output is stored
-  in `tests/expected/` — 45 of the 127 cases. The Perl's behaviour stays on
-  record in `golden/`, so each difference is a reviewable file rather than
-  a silent edit.
+  in `tests/expected/` — 75 of the 171 cases as of this writing; both
+  counts grow as options are added, so `wc -l < tests/cases.tsv` and the
+  non-comment, non-blank lines of `tests/divergences.tsv` are the numbers
+  to trust over this prose. The Perl's behaviour stays on record in
+  `golden/`, so each difference is a reviewable file rather than a silent
+  edit.
 * Everything else about a *successful conversion* — wording, spacing,
   column widths, which stream a message goes to — was treated as specified
   behaviour.
@@ -217,6 +221,100 @@ why the behaviour changed.
   v14's — only the report is added. `-nostderr` still silences
   everything. `convert.py` returns the two kinds of message in separate
   fields so the distinction is structural rather than a string test.
+
+## `-partial`: recovering a codon alignment from a broken pep/CDS pair
+
+New in v16, and not a port of anything v14 did, so it gets its own section.
+
+v14 and v15 abort the entire run on the first peptide/CDS pair that does not
+correspond, with "inconsistency between the following pep and nuc seqs" —
+discarding every other sequence in the alignment along with the offending
+one. Real Ensembl and NCBI data hits this routinely, badly enough that a
+third-party fork, `dukecomeback/pal4nal.pl`, exists solely to work around
+it, by shelling out to `genewise`. `-partial` solves the same problem
+in-process: no external aligner, no dependency to install, and it reports
+what it could not place rather than guessing at it.
+
+`pn2codon` returns `NO_MATCH` for exactly four shapes of input: an intron
+in the DNA, an indel of any size between the peptide and its CDS, and a CDS
+truncated at either end. (A point substitution already worked — it returns
+`MISMATCH`, not `NO_MATCH`, because v14's relaxed-wildcard fallback finds
+it.) All four share one property: the DNA between two of the peptide's
+ten-residue anchors is not the width the anchors assume. `_chain()` in
+`pal2nal/convert.py` places each anchor independently, at the leftmost DNA
+offset at or after the end of the previously placed anchor, instead of
+concatenating every anchor into one fixed-width pattern — so the gap
+between two anchors can be any length, which is what all four pathologies
+need. It uses `Offsets.matches()`, split out of `Offsets.search()` in
+`pal2nal/codonmatch.py`, which returns the whole surviving offset bitmask
+rather than collapsing it to the lowest set bit.
+
+**The chain is gated on `NO_MATCH`.** It runs only after both of v14's
+matching paths — the whole-pattern search and the relaxed-anchor fallback —
+have already failed. This was checked empirically, not assumed: chaining
+unconditionally is worse than v14's fallback on cases that already convert.
+The decisive case is `mismatch_warned`, sequence `m2`: peptide `MAKQLRT`
+against `ATGGCTAAAGGGCTGCGTACT`, one substitution. v14's fallback recovers
+all seven codons and reports the one mismatch. Chaining recovers nothing,
+because a single seven-residue anchor carrying a substitution cannot be
+found on its own and has no neighbouring anchor to bracket it. Because of
+the gate, `-partial` provably changes nothing about any input that
+converts today — `tests/test_partial.py` checks this directly, by running
+every non-`partial_*` case in the corpus twice, with and without the flag,
+and asserting the codon alignment and exit status come out identical.
+
+`_fill_runs()` then recovers an unplaced anchor when it is bracketed by two
+placed anchors and the DNA span between them is exactly the run's width —
+this is what keeps a point substitution like `m2` from being worse under
+chaining than under the old fallback. The fill applies only to interior
+runs: a run at either end of the sequence is pinned on one side only, and
+filling it would read into the 5' UTR or the 3' UTR as if it were coding
+sequence, fabricating a codon from whatever happens to flank the peptide
+rather than reporting that nothing is there.
+
+Anchors are chained **greedily**, left to right. A tandem repeat can attract
+an anchor to the wrong copy of itself; this is a known limitation, not a
+bug to be fixed later, and the residue counts in the `-partial` report
+(`N/M residues placed`) are what would reveal it on real data.
+
+The gap filler for an anchor that cannot be placed is `"-" * width`, where
+`width` is computed the same way `_build_steps` computes it, never three
+dashes per residue. A frame-shift numeral consumes `int(aa)` nucleotides,
+so for the peptide `EK4QKNDTY` the true width is 28, not `3 * 9 = 27`.
+Under-spending by even one nucleotide there shifts every downstream codon
+by one base — `tests/data/drift_pep.fasta` pins that same defect one level
+down, independent of `-partial`, and `partial_frameshift` is the case that
+exercises it here.
+
+`_build_steps` gained a `seen_letter` keyword so that `_chain` can thread
+it across anchors as they are placed one at a time. Without it, every
+anchor beginning with M would match the table's *initiation* codons — the
+`B` pattern — rather than the ordinary Met codon, because `_build_steps`
+used to reset its own notion of "have we seen the first residue yet" on
+every call. Under table 1, `B` is `((U|T|C|Y|A)(U|T)G)`, which also accepts
+CTG and TTG; under table 11 it additionally accepts ATT, ATC, ATA and GTG.
+An untethered `_chain` would let a mid-sequence Met match any of those,
+silently, as if it had been verified.
+
+**An unrelated CDS is deliberately left alone.** It reaches v14's
+relaxed-wildcard fallback, "succeeds" by matching all wildcards at offset
+zero, and yields confident garbage — the codon alignment is emitted as if
+it were correct, with nothing to flag it. That is v14 behaviour pinned by
+the goldens, and it returns `MISMATCH` rather than `NO_MATCH`, so
+`-partial`'s gate never lets the chain engage. Separating this case from a
+legitimate one like `m2` would need a "fraction of codons that verify"
+threshold, and the corpus discipline this project holds itself to should
+not accept a threshold like that without a principled definition of where
+it sits. Instead, under `-partial` the report gains a
+`MISMATCH: <id> 1/60 codons verified` line for exactly this case, which is
+what makes the result visibly worthless without pretending to distinguish
+it algorithmically from a real one.
+
+Finally: `-partial` relaxes only the peptide/CDS correspondence check.
+Ragged alignments, duplicate IDs, bad alphabets and every other validation
+gate still abort the run exactly as they did before. "Does not abort" is
+not "accepts anything". Exit status stays 0 when `-partial` recovers
+something, because not aborting is the point of the flag.
 
 ## Features not ported
 

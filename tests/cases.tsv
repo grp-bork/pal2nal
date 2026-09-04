@@ -153,3 +153,19 @@ allgap_row_paml	data/allgap_pep.fasta data/allgap.nuc -output paml
 version_flag	--version
 version_flag_single_dash	-version
 version_flag_after_files	data/simple_pep.fasta data/simple.nuc --version
+partial_intron	data/intron_pep.fasta data/intron.nuc -partial
+partial_intron_off	data/intron_pep.fasta data/intron.nuc
+partial_indel	data/indel_pep.fasta data/indel.nuc -partial
+partial_trunc5	data/trunc5_pep.fasta data/trunc5.nuc -partial
+partial_trunc3	data/trunc3_pep.fasta data/trunc3.nuc -partial
+partial_unrelated	data/unrelated_pep.fasta data/unrelated.nuc -partial
+partial_frameshift	data/partial_frameshift_pep.fasta data/partial_frameshift.nuc -partial
+partial_multi	data/onebad_pep.fasta data/onebad.nuc -partial
+partial_multi_good	data/onebad_good_only_pep.fasta data/onebad_good_only.nuc -partial
+partial_multi_nogap	data/onebad_pep.fasta data/onebad.nuc -partial -nogap
+partial_multi_nomismatch	data/onebad_pep.fasta data/onebad.nuc -partial -nomismatch
+partial_multi_nostderr	data/onebad_pep.fasta data/onebad.nuc -partial -nostderr
+partial_multi_html	data/onebad_pep.fasta data/onebad.nuc -partial -html
+partial_multi_codon	data/onebad_pep.fasta data/onebad.nuc -partial -output codon
+partial_allgap	data/allgap_pep.fasta data/allgap.nuc -partial
+partial_multi_off	data/onebad_pep.fasta data/onebad.nuc

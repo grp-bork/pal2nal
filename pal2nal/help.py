@@ -1,8 +1,9 @@
 """The usage text, captured from pal2nal.v14.pl:1942 rather than retyped.
 
 The layout is v14's own, trailing space after "Show help" included, and the
-only line v15 adds is --version, which v14 has no equivalent of; leaving it
-out would mean shipping an option that -h denies exists. Everything else is
+only entries added since are --version (v15) and -partial (v16), which v14
+has no equivalent of; leaving them out would mean shipping options that -h
+denies exist. Everything else is
 byte for byte the Perl's, so `tests/golden/help_flag.err` stays a usable
 diff against it.
 
@@ -39,6 +40,10 @@ Usage:  pal2nal.pl  pep.aln  nuc.fasta  [nuc.fasta...]  [options]
 
               -nomismatch   remove mismatched codons (mismatch between
                             pep and cDNA) from the output
+
+              -partial      when a peptide and its DNA do not correspond,
+                            convert the codons that can be matched, gap the
+                            rest, and carry on instead of stopping the run
 
               -codontable  N
                     1  Universal code (default)
